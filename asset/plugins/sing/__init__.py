@@ -5,7 +5,7 @@ from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot import Message, MessageSegment
 
 from .data_source import *
-
+from functions import tools
 
 __plugin_name__ = '唱歌'
 __plugin_usage__ = r"""根据网易云音乐黒羽翼堕天的电台《神楽mea的清楚time》选取歌曲播放
@@ -35,7 +35,7 @@ async def sing(session: CommandSession):
         song_dir = get_file_CQ_dir(song_name)
         del ctx['message']
         print(song_dir)
-        await bot.send_msg(**ctx, message = song_name.replace('.mp3', ''))
+        await bot.send_msg(**ctx, message = song_name[0: song_name.rfind('.')])
         await bot.send_msg(**ctx, message = [{'type': 'record', 'data': {'file': song_dir}}])
     else:
         song_list = await search_songs(song_name)
@@ -43,21 +43,23 @@ async def sing(session: CommandSession):
             song_str = '你要听哪首啊（嫌弃） \n'
             for i in range(len(song_list)):
                 song_name = song_list[i]
-                song_name = song_name.replace('.mp3', '')
-                song_name = song_name.replace('- 黒羽翼堕天', '')
+                # song_name = song_name.replace('.mp3', '')
+                dot_index = song_name.rfind('.')
+                song_name = song_name[0: dot_index]
                 song_name = song_name.strip()
                 song_str = song_str + str(i+1) + '. ' + song_name + '\n'
             song_index = session.get('song_index', prompt=song_str)
             song_dir = get_file_CQ_dir(song_list[int(song_index) - 1])
             del ctx['message']
-            await bot.send_msg(**ctx, message = song_list[int(song_index) - 1].replace('.mp3', ''))
+            song_name = song_list[int(song_index) - 1]
+            await bot.send_msg(**ctx, message = song_name[0: song_name.rfind('.')])
             await bot.send_msg(**ctx, message = [{'type': 'record', 'data': {'file': song_dir}}])
         elif len(song_list) == 1:
             song_name = song_list[0]
             song_dir = get_file_CQ_dir(song_name)
             del ctx['message']
             print(song_dir)
-            await bot.send_msg(**ctx, message = song_name.replace('.mp3', ''))
+            await bot.send_msg(**ctx, message = song_name[0: song_name.rfind('.')])
             await bot.send_msg(**ctx, message = [{'type': 'record', 'data': {'file': song_dir}}])
         else:
             await session.send('不会唱这个！')

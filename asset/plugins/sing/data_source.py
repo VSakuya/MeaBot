@@ -40,12 +40,16 @@ async def update_songs() -> bool:
     global SONGS_PATH
     files = os.listdir(SONGS_PATH)
     temp_list = []
-    black_list = ['/', '\t', '\b', '@', '#', '$', '%', '^', '&', '*', '(', ')', '[', ']', '-', ' ', '黒羽翼堕天','・','♡','〜']
+    black_list = ['/', '\t', '\b', '@', '#', '$', '%', '^', '&', '*', '(', ')', '[', ']', '-', '黒羽翼堕天','・','♡','〜']
     for file in files :
         if not os.path.isdir(file):
             temp_file = file
             for bl_item in black_list: 
                 temp_file = temp_file.replace(bl_item, '')
+                temp_file.strip()
+                pure_name = temp_file[0: temp_file.rfind('.')]
+                pure_name.strip()
+                temp_file = pure_name + temp_file[temp_file.rfind('.'): len(temp_file)]
             os.rename(SONGS_PATH + os.sep + file, SONGS_PATH + os.sep + temp_file)
 
             temp_list.append(temp_file)

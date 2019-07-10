@@ -392,7 +392,7 @@ async def reply_to_nl(session: NLPSession):
     
     if sound_list:
         for key in sound_list:
-            key_pure = key[0: key.find('.')]
+            key_pure = key[0: key.rfind('.')]
             keys = key_pure.split('_')
             for single_key in keys:
                 if in_str.find(single_key) >= 0:
