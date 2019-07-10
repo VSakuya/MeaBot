@@ -214,6 +214,8 @@ async def hour_check():
             global bot
             for key in cur_ma_data:
                 if tools.is_int(key):
+                    if not 'max_cur_day' in cur_ma_data[key]:
+                        continue
                     day_msg = '本日共发出口球%s，本日最佳是%s：%s'%(
                         tools.sec_to_str(cur_ma_data[key]['sum_this_day']),
                         '和'.join(cur_ma_data[key]['max_cur_day']['nickname']),
@@ -225,6 +227,8 @@ async def hour_check():
             if date_list[4] == 1:
                 for key in cur_ma_data:
                     if tools.is_int(key):
+                        if not 'max_cur_week' in cur_ma_data[key]:
+                            continue
                         week_msg = '本周共发出口球%s，本周最佳是%s：%s'%(
                             tools.sec_to_str(cur_ma_data[key]['sum_this_week']),
                             '和'.join(cur_ma_data[key]['max_cur_week']['nickname']),
@@ -236,6 +240,8 @@ async def hour_check():
             if date_list[2] == 1:
                 for key in cur_ma_data:
                     if tools.is_int(key):
+                        if not 'max_cur_month' in cur_ma_data[key]:
+                            continue
                         month_msg = '本月共发出口球%s，本月最佳是%s：%s'%(
                             tools.sec_to_str(cur_ma_data[key]['sum_this_month']),
                             '和'.join(cur_ma_data[key]['max_cur_month']['nickname'])
