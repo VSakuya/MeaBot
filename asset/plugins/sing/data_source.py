@@ -46,9 +46,9 @@ async def update_songs() -> bool:
             temp_file = file
             for bl_item in black_list: 
                 temp_file = temp_file.replace(bl_item, '')
-                temp_file.strip()
+                temp_file = temp_file.strip()
                 pure_name = temp_file[0: temp_file.rfind('.')]
-                pure_name.strip()
+                pure_name = pure_name.strip()
                 temp_file = pure_name + temp_file[temp_file.rfind('.'): len(temp_file)]
             os.rename(SONGS_PATH + os.sep + file, SONGS_PATH + os.sep + temp_file)
 
