@@ -105,27 +105,6 @@ venv.bak/
 new_music/raise - 黒羽翼堕天.mp3
 proxy.bat
 .vscode/launch.json
-asset/data/autoreply.json
-asset/data/autoreply_temp.json
-asset/data/autoreply_temp copy.json
-asset/data/black_list.json
-asset/data/live.json
-asset/data/live_alert_list.json
-asset/data/mute.json
-asset/data/mute_analyze.json
-asset/data/sing.json
-asset/data/sound.json
-asset/data/special_user.json
-asset/data/special_user copy.json
-asset/data/twitter.json
-asset/data/test/icon.jpg
-asset/data/test/咩.mp3
+asset/data/
 asset/plugins/twitter/233.html
-asset/plugins/weather/__init__.py
-asset/plugins/weather/data_source.py
-new_music/alice in 冷凍庫 - 黒羽翼堕天.mp3
-new_music/chelsea girl - 黒羽翼堕天.mp3
-new_music/endless story - 黒羽翼堕天.mp3
-new_music/honey♥come!! - 黒羽翼堕天.mp3
-new_music/our steady boy - 黒羽翼堕天.mp3
-new_music/ヒビカセ - 黒羽翼堕天.mp3
+asset/plugins/weather/
