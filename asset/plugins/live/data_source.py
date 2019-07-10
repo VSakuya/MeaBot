@@ -41,7 +41,7 @@ async def get_B_live_data():
 
 async def get_YB_live_data():
     #国内测试开关
-    return False
+    # return False
     global URL_YTB
     cookie_youtube = 'GPS=1;' \
                     'VISITOR_INFO1_LIVE=gQXoeXTOXq4;' \

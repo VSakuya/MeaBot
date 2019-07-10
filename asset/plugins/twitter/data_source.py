@@ -33,7 +33,7 @@ async def get_html_soup(url : str):
 
 async def pull_twitter_data() -> dict:
     # 国内测试开关
-    return False
+    # return False
     org_soup = await get_html_soup(TWITTER_URL)
     if not org_soup:
         return False
