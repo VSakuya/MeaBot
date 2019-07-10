@@ -3,7 +3,6 @@ import random
 from nonebot import on_command, CommandSession, permission as perm
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot import Message, MessageSegment
-from jieba import posseg
 
 from .data_source import *
 

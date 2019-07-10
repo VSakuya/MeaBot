@@ -4,7 +4,6 @@ import time
 from nonebot import on_command, CommandSession
 from nonebot import on_natural_language, NLPSession, IntentCommand, permission as perm
 from nonebot import Message, MessageSegment
-from jieba import posseg
 
 from .data_source import *
 from config import global_var

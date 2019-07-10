@@ -7,7 +7,6 @@ from nonebot.typing import Context_T
 from nonebot import on_command, CommandSession, permission as perm
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot import Message, MessageSegment
-from jieba import posseg
 
 from datetime import datetime
 from aiocqhttp.exceptions import Error as CQHttpError

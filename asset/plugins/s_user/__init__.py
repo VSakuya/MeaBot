@@ -3,13 +3,7 @@ from nonebot import on_command, CommandSession, permission as perm
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot import Message, MessageSegment
 from nonebot.typing import Context_T
-# import requests
-# import asyncio
-# import time
 import nonebot
-# import datetime
-# import random
-import emoji
 
 from .data_source import *
 from functions import special_user
