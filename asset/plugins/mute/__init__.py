@@ -200,7 +200,7 @@ async def handle_group_message(ctx: Context_T):
 async def hour_check():
     now = datetime.now(pytz.timezone('Asia/Shanghai'))
     cur_min = now.minute
-    if cur_min > 5:
+    if cur_min >= 10:
         return
     print('check analyze')
     date_list = [now.year, now.month, now.day, now.hour, datetime.isoweekday(now)]
