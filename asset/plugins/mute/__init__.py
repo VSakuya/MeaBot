@@ -126,10 +126,10 @@ async def add_mute(session: CommandSession):
     key_word = session.get('key_word', prompt='赶紧输入迫害关键字啊debu，用‘|’分隔，如‘死宅|真的|恶心’')
     mute_time = session.get('message', prompt='口多久？（单位秒 60~2591999）')
     new_dict = {
-        'user_id' : int(user_id),
-        'group_id' : int(group_id),
+        'user_id' : user_id,
+        'group_id' : group_id,
         'key_word' : key_word,
-        'mute_time' : int(mute_time)
+        'mute_time' : mute_time
     }
     result = await add_mute_data(new_dict)
     DATA_LIST = await get_mute_data()
@@ -155,6 +155,8 @@ async def am_parser(session: CommandSession):
             session.pause('哈？你觉得这个像QQ号吗？')
         if stripped_arg == '否':
             session.state['user_id'] = None
+        if tools.is_int(stripped_arg):
+            session.state['user_id'] = int(stripped_arg)
 
     if session.current_key == 'group_id':
         if not stripped_arg:
@@ -163,6 +165,8 @@ async def am_parser(session: CommandSession):
             session.pause('哈？你觉得这个像群号吗？')
         if stripped_arg == '否':
             session.state['group_id'] = None
+        if tools.is_int(stripped_arg):
+            session.state['group_id'] = int(stripped_arg)
 
 
 
@@ -176,6 +180,8 @@ async def am_parser(session: CommandSession):
         else:
             if int(stripped_arg) > 2591999 and int(stripped_arg) < 60:
                 session.pause('时间范围都不会看的吗baka！')
+            if tools.is_int(stripped_arg):
+                session.state['mute_time'] = int(stripped_arg)
 
             
 bot = nonebot.get_bot()
