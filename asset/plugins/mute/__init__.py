@@ -72,20 +72,24 @@ async def mute_list(session: CommandSession):
         for i in range(len(DATA_LIST)):
             item = DATA_LIST[i]
             if group_id == item['group_id']:
-                data_str = '\n' + data_str + str(i+1) + '. ' + 'QQ:' +str(item['user_id']) + ' 群:' + str(item['group_id']) + ' 关键字:' + str(item['key_word']) + ' 时长:' + str([item['mute_time']])
+                data_str = data_str + '\n' + str(i+1) + '. ' + 'QQ:' +str(item['user_id']) + ' 群:' + str(item['group_id']) + ' 关键字:' + str(item['key_word']) + ' 时长:' + str([item['mute_time']])
         await session.send(data_str)
 
 @on_command('mute_del_by_index', aliases = ('删除迫害', '迫害删除'), permission=perm.GROUP_ADMIN)
 async def mute_del_by_index(session: CommandSession):
     msg = '你要删除一项啊debu'
+    global DATA_LIST
     group_list = []
     group_id = session.ctx['group_id']
+    DATA_LIST = await get_mute_data()
     for i in range(len(DATA_LIST)):
         item = DATA_LIST[i]
-        if group_id == item['group_id']:
+        if group_id == int(item['group_id']):
             group_list.append(i)
-            msg = '\n' + msg + str(i+1) + '. ' + 'QQ:' +str(item['user_id']) + ' 群:' + str(item['group_id']) + ' 关键字:' + str(item['key_word']) + ' 时长:' + str([item['mute_time']])
-    index = session.get('index', prompt='msg')
+            msg = msg + '\n' + str(i+1) + '. ' + 'QQ:' +str(item['user_id']) + ' 群:' + str(item['group_id']) + ' 关键字:' + str(item['key_word']) + ' 时长:' + str([item['mute_time']])
+    if len(group_list) == 0:
+        await session.finish('这群没有迫害~')
+    index = session.get('index', prompt=msg)
     if not int(index) - 1 in group_id:
         await session.finish('这是隔壁群的，你这是要翻天？')
     result = await del_data_by_index(int(index) - 1)
@@ -122,10 +126,10 @@ async def add_mute(session: CommandSession):
     key_word = session.get('key_word', prompt='赶紧输入迫害关键字啊debu，用‘|’分隔，如‘死宅|真的|恶心’')
     mute_time = session.get('message', prompt='口多久？（单位秒 60~2591999）')
     new_dict = {
-        'user_id' : user_id,
-        'group_id' : group_id,
+        'user_id' : int(user_id),
+        'group_id' : int(group_id),
         'key_word' : key_word,
-        'mute_time' : mute_time
+        'mute_time' : int(mute_time)
     }
     result = await add_mute_data(new_dict)
     DATA_LIST = await get_mute_data()
