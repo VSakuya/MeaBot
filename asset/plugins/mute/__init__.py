@@ -63,6 +63,7 @@ async def mute_arrange(session: CommandSession):
 @on_command('mute_list', aliases = ('迫害列表', '列表迫害'), permission=perm.GROUP_ADMIN)
 async def mute_list(session: CommandSession):
     global DATA_LIST
+    group_id = session.ctx['group_id']
     DATA_LIST = await get_mute_data()
     if not DATA_LIST:
         await session.send('列表为空！')
@@ -70,12 +71,23 @@ async def mute_list(session: CommandSession):
         data_str = ''
         for i in range(len(DATA_LIST)):
             item = DATA_LIST[i]
-            data_str = data_str + str(i+1) + '. ' + 'QQ:' +str(item['user_id']) + ' 群:' + str(item['group_id']) + ' 关键字:' + str(item['key_word']) + ' 时长:' + str([item['mute_time']]) + '\n'
+            if group_id == item['group_id']:
+                data_str = '\n' + data_str + str(i+1) + '. ' + 'QQ:' +str(item['user_id']) + ' 群:' + str(item['group_id']) + ' 关键字:' + str(item['key_word']) + ' 时长:' + str([item['mute_time']])
         await session.send(data_str)
 
 @on_command('mute_del_by_index', aliases = ('删除迫害', '迫害删除'), permission=perm.GROUP_ADMIN)
 async def mute_del_by_index(session: CommandSession):
-    index = session.get('index', prompt='你要删除一项啊debu')
+    msg = '你要删除一项啊debu'
+    group_list = []
+    group_id = session.ctx['group_id']
+    for i in range(len(DATA_LIST)):
+        item = DATA_LIST[i]
+        if group_id == item['group_id']:
+            group_list.append(i)
+            msg = '\n' + msg + str(i+1) + '. ' + 'QQ:' +str(item['user_id']) + ' 群:' + str(item['group_id']) + ' 关键字:' + str(item['key_word']) + ' 时长:' + str([item['mute_time']])
+    index = session.get('index', prompt='msg')
+    if not int(index) - 1 in group_id:
+        await session.finish('这是隔壁群的，你这是要翻天？')
     result = await del_data_by_index(int(index) - 1)
     if result:
         await session.send('搞定！快夸我！')
@@ -97,12 +109,16 @@ async def mdbi_parser(session: CommandSession):
 @on_command('add_mute', aliases = ('添加迫害', '迫害添加'), permission=perm.GROUP_ADMIN)
 async def add_mute(session: CommandSession):
     global DATA_LIST
+    ctx = session.ctx.copy()
     if DATA_LIST == None:
         DATA_LIST = await get_mute_data()
     user_id = session.get('user_id', prompt='你要指定迫害哪个QQ的死宅啊？（是直接发送Q号，否则回单字否，否字会写吧）')
-    group_id = session.get('group_id', prompt='你丫的要不要指定在哪个QQ群迫害？（是直接发送群号，否则回单字否，否字会写吧）')
-    if (group_id == None and user_id == None) :
-        session.finish('QQ号和Q群必须填一个！强制终止手冲')
+    if not 'group_id' in ctx:
+        group_id = session.get('group_id', prompt='你丫的要不要指定在哪个QQ群迫害？（是直接发送群号，否则回单字否，否字会写吧）')
+    else: 
+        group_id = ctx['group_id']
+    # if (group_id == None and user_id == None) :
+    #     session.finish('QQ号和Q群必须填一个！强制终止手冲')
     key_word = session.get('key_word', prompt='赶紧输入迫害关键字啊debu，用‘|’分隔，如‘死宅|真的|恶心’')
     mute_time = session.get('message', prompt='口多久？（单位秒 60~2591999）')
     new_dict = {
