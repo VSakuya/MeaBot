@@ -90,7 +90,7 @@ async def mute_del_by_index(session: CommandSession):
     if len(group_list) == 0:
         await session.finish('这群没有迫害~')
     index = session.get('index', prompt=msg)
-    if not int(index) - 1 in group_id:
+    if not (int(index) - 1) in group_list:
         await session.finish('这是隔壁群的，你这是要翻天？')
     result = await del_data_by_index(int(index) - 1)
     if result:
