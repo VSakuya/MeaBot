@@ -203,10 +203,10 @@ async def handle_group_message(ctx: Context_T):
                 if banned_id in susers:
                     msg_ctx = ctx.copy()
                     msg_ctx['message'] = 'bot帕里你怎么又被塞住了，我来帮帮你吧（从后面）'
-                    await bot.send(**msg_ctx)
+                    await bot.send_msg(**msg_ctx)
                     await bot.set_group_ban(group_id=ctx['group_id'], user_id=ctx['user_id'], duration=0)
                     msg_ctx['message'] = '好了，舒服吗？'
-                    await bot.send(**msg_ctx)
+                    await bot.send_msg(**msg_ctx)
                 
     global DATA_LIST
     if DATA_LIST == None:
