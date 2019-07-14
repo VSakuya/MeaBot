@@ -12,6 +12,7 @@ from datetime import datetime
 from aiocqhttp.exceptions import Error as CQHttpError
 from .data_source import *
 from functions import tools
+from config import global_var
 
 
 __plugin_name__ = '迫害插件'
@@ -27,11 +28,11 @@ __plugin_usage__ = """根据关键字禁言（需管理员权限）
 
 ！代抽口球/口球代抽 (群管理员 +QQ号) 
 
-口球 （任何人 普通包含：上限30分钟；包含“睡眠”：上限8小时;包含“大”字：上限1天；包含“终极”：上限30天，请在管理员陪同下尝试）
+口球 （任何人 普通包含：上限30分钟；包含“睡眠”：上限8小时;包含“大”字：上限1天；包含“终极”：上限30天，请在管理员陪同下尝试，有1%的几率会被自动解除哦）
 
 献祭自己/我来做祭品 （任何人 献祭一个小时来换取mea直播机会）
 
-！大赦天下/全部解除口球 （群管理员）
+！大赦天下/全部解除口球 （群管理员，昵称带有“考试”，“备考”，“高考”，“ks”的群友不会被解除）
 
 ！口球统计/统计口球 （任何人 一些没什么卵用的信息）
 
@@ -40,6 +41,7 @@ __plugin_usage__ = """根据关键字禁言（需管理员权限）
 # 命令+群昵称（可不完整）或完整qq号
 DATA_LIST = None
 
+REMOVE_IGNORE_LIST = ['考试', '备考', '高考', 'ks']
 
 @on_command('save_paryi', aliases = ('救救帕里', 'bot管理员拯救'), permission=perm.SUPERUSER)
 async def save_paryi(session: CommandSession):
@@ -187,8 +189,26 @@ async def am_parser(session: CommandSession):
 bot = nonebot.get_bot()
 @bot.on_message('group')
 async def handle_group_message(ctx: Context_T):
-    global DATA_LIST
     global bot
+    #检测禁言
+    if ctx['user_id'] == 1000000:
+        raw_message = ctx['raw_message']
+        if '禁言' in raw_message:
+            banned_id = int(raw_message[raw_message.rfind('(') + 1: raw_message.rfind(')')])
+            print(banned_id)
+            if '解除' in raw_message:
+                pass
+            else:
+                susers = global_var.get_super_users()
+                if banned_id in susers:
+                    msg_ctx = ctx.copy()
+                    msg_ctx['message'] = 'bot帕里你怎么又被塞住了，我来帮帮你吧（从后面）'
+                    await bot.send(**msg_ctx)
+                    await bot.set_group_ban(group_id=ctx['group_id'], user_id=ctx['user_id'], duration=0)
+                    msg_ctx['message'] = '好了，舒服吗？'
+                    await bot.send(**msg_ctx)
+                
+    global DATA_LIST
     if DATA_LIST == None:
         DATA_LIST = await get_mute_data()
     found_it = False
@@ -358,7 +378,13 @@ async def nl_mute_draw(session: NLPSession):
     elif max_result == 31:
         message = message + '\n并且持平了本月最佳！'
     await bot.send_msg(group_id=ctx['group_id'], message=message)
-
+    rand_num = random.randint(0, 99)
+    if rand_num == 0:
+        msg = 'mea捏，突然觉得心情好，所以还是给%s你解除了吧（从后面）'%nickname
+        await bot.send_msg(group_id=ctx['group_id'], message=msg)
+        await bot.set_group_ban(group_id=ctx['group_id'], user_id=ctx['user_id'], duration=0)
+        msg = '%s你开心吧？记得下次直播的时候打钱哦~~'%nickname
+        await bot.send_msg(group_id=ctx['group_id'], message=msg)
 
 @on_natural_language(keywords={'献祭自己', '我来做祭品'})
 async def sacrifice_mute(session: NLPSession):
@@ -397,7 +423,17 @@ async def all_mute_disable(session: CommandSession):
     ctx = session.ctx.copy()
     group_list = await bot.get_group_member_list(group_id=ctx['group_id'])
     for item in group_list:
-        await bot.set_group_ban(group_id=ctx['group_id'], user_id=item['user_id'], duration=0)
+        is_ignore = False
+        if 'card' in item:
+            card = item['card']
+            global REMOVE_IGNORE_LIST
+            for i_item in REMOVE_IGNORE_LIST:
+                if i_item in card:
+                    is_ignore = True
+        if not is_ignore:
+            await bot.set_group_ban(group_id=ctx['group_id'], user_id=item['user_id'], duration=0)
+            
+
 
 @on_command('admin_draw', aliases = ('代抽口球', '口球代抽'), permission=perm.GROUP_ADMIN)
 async def admin_draw(session: CommandSession):
