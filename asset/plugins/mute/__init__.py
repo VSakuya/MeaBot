@@ -28,7 +28,7 @@ __plugin_usage__ = """根据关键字禁言（需管理员权限）
 
 ！代抽口球/口球代抽 (群管理员 +QQ号) 
 
-口球 （任何人 普通包含：上限30分钟；包含“睡眠”：上限8小时;包含“大”字：上限1天；包含“终极”：上限30天，请在管理员陪同下尝试，有1%的几率会被自动解除哦）
+口球 （任何人 普通包含：上限30分钟；包含“睡眠”：上限8小时;包含“大”字：上限1天；包含“终极”：上限30天，请在管理员陪同下尝试；所以口球有1%的几率会被自动解除哦）
 
 献祭自己/我来做祭品 （任何人 献祭一个小时来换取mea直播机会）
 
@@ -202,10 +202,10 @@ async def handle_group_message(ctx: Context_T):
                 susers = global_var.get_super_users()
                 if banned_id in susers:
                     msg_ctx = ctx.copy()
-                    msg_ctx['message'] = 'bot帕里你怎么又被塞住了，我来帮帮你吧（从后面）'
+                    msg_ctx['message'] = 'bot帕里你怎么又被塞住了，我来帮帮你吧（猛地抽出！）'
                     await bot.send_msg(**msg_ctx)
                     await bot.set_group_ban(group_id=ctx['group_id'], user_id=banned_id, duration=0)
-                    msg_ctx['message'] = '好了，舒服吗？'
+                    msg_ctx['message'] = '好了，料金10000円？'
                     await bot.send_msg(**msg_ctx)
                 
     global DATA_LIST
@@ -380,7 +380,7 @@ async def nl_mute_draw(session: NLPSession):
     await bot.send_msg(group_id=ctx['group_id'], message=message)
     rand_num = random.randint(0, 99)
     if rand_num == 0:
-        msg = 'mea捏，突然觉得心情好，所以还是给%s你解除了吧（从后面）'%nickname
+        msg = 'mea捏，突然觉得心情好，所以还是给%s你解除了吧（按进去让你吞下）'%nickname
         await bot.send_msg(group_id=ctx['group_id'], message=msg)
         await bot.set_group_ban(group_id=ctx['group_id'], user_id=ctx['user_id'], duration=0)
         msg = '%s你开心吧？记得下次直播的时候打钱哦~~'%nickname
