@@ -417,11 +417,15 @@ async def sacrifice_mute(session: NLPSession):
     message = '你上祭坛了，我不一定播，以上！'
     await bot.send_msg(group_id=ctx['group_id'], message=message)
 
-@on_command('all_mute_disable', aliases = ('大赦天下', '全部解除口球'), permission=perm.GROUP_ADMIN)
-async def all_mute_disable(session: CommandSession):
+@on_command('remove_all_mute', aliases = ('大赦天下', '全部解除口球'), permission=perm.GROUP_ADMIN)
+async def remove_all_mute(session: CommandSession):
     bot = session.bot
     ctx = session.ctx.copy()
-    group_list = await bot.get_group_member_list(group_id=ctx['group_id'])
+    await remove_all_mute_public(ctx['group_id'])
+
+
+async def remove_all_mute_public(group_id: int):
+    group_list = await bot.get_group_member_list(group_id=group_id)
     for item in group_list:
         is_ignore = False
         if 'card' in item:
@@ -431,9 +435,7 @@ async def all_mute_disable(session: CommandSession):
                 if i_item in card:
                     is_ignore = True
         if not is_ignore:
-            await bot.set_group_ban(group_id=ctx['group_id'], user_id=item['user_id'], duration=0)
-            
-
+            await bot.set_group_ban(group_id=group_id, user_id=item['user_id'], duration=0)
 
 @on_command('admin_draw', aliases = ('代抽口球', '口球代抽'), permission=perm.GROUP_ADMIN)
 async def admin_draw(session: CommandSession):

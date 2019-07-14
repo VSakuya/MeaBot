@@ -12,6 +12,8 @@ import random
 from .data_source import *
 from functions import special_user
 from functions import tools
+from config import global_var
+from asset.plugins.mute import remove_all_mute_public
 
 __plugin_name__ = '直播提醒'
 __plugin_usage__ = r"""从YTB，B站以及TC台获取直播状态
@@ -56,7 +58,7 @@ async def query_timer():
     is_started_YB_live = False
     is_started_TC_live = False
     global LIVE_STARTED
-
+    IntentCommand(90, 'all_mute_disable')
     if not 'live_state' in local_data_dict:
         local_data_dict = {'live_state': True, 'live_time': 0}
 
@@ -65,7 +67,9 @@ async def query_timer():
             is_started_B_live = True
         print('B no live')
     else:
-        await bot.send_private_msg(user_id = 904853953, message='自动获取B站直播数据出错')
+        suser = global_var.get_super_users()
+        for su in suser:
+            await bot.send_private_msg(user_id = su, message='自动获取B站直播数据出错')
 
     if json_data_YTB:
         is_started_YB_live = True
@@ -78,20 +82,23 @@ async def query_timer():
         print('TC no live')
 
     if (is_started_B_live or is_started_YB_live or is_started_TC_live) and not local_data_dict['live_state']:
+        LIVE_STARTED = True
         new_local = {'live_state': True, 'live_time': time.time()}
         await write_live_data(new_local)
-        LIVE_STARTED = True
         group_list = await bot.get_group_list()
         if is_started_B_live:
             for item in group_list:
+                await remove_all_mute_public(item)
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment.share(url=json_data_B['url'], title=json_data_B['title'], content='mea开播啦', image_url=json_data_B['cover']))
         elif not is_started_B_live and is_started_YB_live:
             for item in group_list:
+                await remove_all_mute_public(item)
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
                 await bot.send_group_msg(group_id=item['group_id'], message='Mea正在Youtube直播！！！')
         elif not (is_started_B_live or is_started_YB_live) and is_started_TC_live:
             for item in group_list:
+                await remove_all_mute_public(item)
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment.share(url=json_data_TC['url'], title='Mea在TC台直播！', content='mea开播啦', image_url=json_data_TC['image']))
         global ALERT_LIST
