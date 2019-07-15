@@ -90,20 +90,18 @@ async def query_timer():
             for item in group_list:
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment.share(url=json_data_B['url'], title=json_data_B['title'], content='mea开播啦', image_url=json_data_B['cover']))
-                await remove_all_mute_public(item['group_id'])
         elif not is_started_B_live and is_started_YB_live:
             for item in group_list:
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
                 await bot.send_group_msg(group_id=item['group_id'], message='Mea正在Youtube直播！！！')
-                await remove_all_mute_public(item['group_id'])
         elif not (is_started_B_live or is_started_YB_live) and is_started_TC_live:
             for item in group_list:
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment.share(url=json_data_TC['url'], title='Mea在TC台直播！', content='mea开播啦', image_url=json_data_TC['image']))
-                await remove_all_mute_public(item['group_id'])
         global ALERT_LIST
         ALERT_LIST = await special_user.get_live_alert_list()
-        
+        for item in group_list:
+            await remove_all_mute_public(item['group_id'])
     elif not (is_started_B_live or is_started_YB_live or is_started_TC_live) and local_data_dict['live_state']:
         LIVE_STARTED = False
         global ALERT_DATA
@@ -138,7 +136,7 @@ async def alert_qq():
         alert_msg_list = ['直播啦！', '快醒醒！', '起床啦！', '动一下！debu！', '快出来看直播！']
         # print('正在执行提醒: ' + ALERT_DATA)
 
-
+        del_list = []
         for key in ALERT_DATA:
             # print(ALERT_DATA)
             qq = key
@@ -153,7 +151,9 @@ async def alert_qq():
                 except:
                     send_status = False
                 if not send_status:
-                    del ALERT_DATA[qq]
+                    del_list.append(qq)
+        for item in del_list:
+            del ALERT_DATA[item]
 
 example = {'live_state': True, 'live_time': 23123121}
 
