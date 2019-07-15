@@ -100,8 +100,8 @@ async def query_timer():
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment.share(url=json_data_TC['url'], title='Mea在TC台直播！', content='mea开播啦', image_url=json_data_TC['image']))
         global ALERT_LIST
         ALERT_LIST = await special_user.get_live_alert_list()
-        for item in group_list:
-            await remove_all_mute_public(item['group_id'])
+        # for item in group_list:
+        #     await remove_all_mute_public(item['group_id'])
     elif not (is_started_B_live or is_started_YB_live or is_started_TC_live) and local_data_dict['live_state']:
         LIVE_STARTED = False
         global ALERT_DATA
@@ -114,7 +114,8 @@ async def query_timer():
             # else:
             #     await bot.send_group_msg(ctx, MessageSegment.share(url=json_data['url'], title=json_data['title'], content='mea开播啦', image_url=json_data['cover']))
             #     # await bot.send(ctx, MessageSegment(type_='at', data={'qq': 'all'}) + '\n' + Message('没在播\n'+ json_data['url'] + json_data['title']) + MessageSegment.image(json_data['cover']))
-
+    elif is_started_B_live or is_started_YB_live or is_started_TC_live : 
+        LIVE_STARTED = True
     # await bot.send_group_msg(group_id=204421130, message=MessageSegment.share(url=json_data['url'], title=json_data['title'], content='mea开播啦', image_url=json_data['cover']))
     # await bot.send_group_msg(group_id=204421130, message='test')
 
