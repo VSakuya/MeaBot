@@ -2,6 +2,7 @@
 from nonebot import on_command, CommandSession, permission as perm
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot import Message, MessageSegment
+from nonebot import logger
 import requests
 import asyncio
 import time
@@ -16,12 +17,12 @@ from functions import check_black_list
 from config import global_var
 from asset.plugins.mute import remove_all_mute_public
 
-__plugin_name__ = '直播提醒'
+__plugin_name__ = '直播'
 __plugin_usage__ = r"""从YTB，B站以及TC台获取直播状态
 优先度：B>YTB>TC
 指令：
 播了吗/直播 (所有人，获取当前直播状态)
-"""
+救救孩子/请求口球解除 （所有人，可私聊，在直播时可解除口球）"""
 LIVE_STARTED = False
 ALERT_STARTED = False
 ALERT_DATA = {}
@@ -42,6 +43,20 @@ async def live_status(session: NLPSession):
         await bot.send(ctx, Message('mea还在准备播'))
             # await bot.send(ctx, MessageSegment(type_='at', data={'qq': 'all'}) + '\n' + Message('没在播\n'+ json_data['url'] + json_data['title']) + MessageSegment.image(json_data['cover']))
 
+@on_natural_language(keywords={'救救孩子', '请求口球解除'})
+@check_black_list()
+async def save_when_live(session: NLPSession):
+    global LIVE_STARTED
+    if LIVE_STARTED:
+        ctx = session.ctx.copy()
+        user_id = ctx['user_id']
+        bot = session.bot
+        group_list = await bot.get_group_list()
+        for item in group_list:
+            await bot.set_group_ban(group_id = item['group_id'], user_id = user_id, duration = 0)
+        await session.send('那这次就放过你吧！')
+    else:
+        await session.send('Mea还在摸，不给解除~~')
 
 @on_command('live_simulate', aliases = ('模拟开播', '开播模拟'), permission=perm.SUPERUSER)
 async def live_simulate(session: CommandSession):
