@@ -5,6 +5,7 @@ from nonebot import Message, MessageSegment
 import nonebot
 
 from .data_source import *
+from functions import check_black_list
 
 
 __plugin_name__ = '推特'
@@ -13,7 +14,8 @@ __plugin_usage__ = r"""获取并提醒Mea的推特状态
 最新推文 （所有人）"""
 
 @on_natural_language(keywords={'最新推文'})
-async def test(session: NLPSession):
+@check_black_list()
+async def lastest_tweet(session: NLPSession):
     ctx = session.ctx.copy()
     bot = session.bot
     tw_data = await pull_twitter_data()

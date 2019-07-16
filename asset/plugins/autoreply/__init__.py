@@ -10,6 +10,7 @@ from config import global_var
 from functions import black_list
 from functions import tools
 from functions import special_user
+from functions import check_black_list
 __plugin_name__ = '自动回复'
 __plugin_usage__ = r"""任何人都能轻松提交的自动回复
 提交音频请将音频（mp3即可）以及关键字发送给VSakuya
@@ -27,16 +28,11 @@ CURRENT_CHECKING_USER = 0
 
 
 @on_command('add_autoreply', aliases = ('添加自动回复', '自动回复添加'), permission=perm.GROUP_MEMBER)
+@check_black_list()
 async def add_autoreply(session: CommandSession):
     ctx = session.ctx.copy()
     bot = session.bot
     user_id = ctx['user_id']
-    if await black_list.is_black_list(user_id):
-        ctx_t = ctx
-        ctx_t['message'] = '你已被拉黑'
-        await bot.send_msg(**ctx_t)
-        return
-    
     #获取昵称
     nickname = ''
     if 'group_id' in ctx:
@@ -150,6 +146,7 @@ async def aa_parser(session: CommandSession):
         session.state['message'] = new_msg
 
 @on_command('list_ar', aliases = ('自动回复列表', '列表自动回复'), permission=perm.GROUP_MEMBER)
+@check_black_list()
 async def list_ar(session: CommandSession):
     key_list = await get_key_list()
     sound_list = await get_sound_data()
@@ -360,6 +357,7 @@ async def update_sound(session: CommandSession):
         
 
 @on_natural_language()
+@check_black_list()
 async def reply_to_nl(session: NLPSession):
     bot = session.bot
     ctx = session.ctx.copy()

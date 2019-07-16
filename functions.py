@@ -1,6 +1,7 @@
 import json
 import os
 import math
+from nonebot.session import BaseSession
 
 class black_list:
     @staticmethod
@@ -38,6 +39,38 @@ class black_list:
         if user_id in bl:
             return True
         return False
+
+CBL_LATEST_MSGID = 0
+def check_black_list(alert_msg: str = '你在黑名单里！'):
+    def deco(func):
+        async def warpper(*args, **kwargs):
+            # print (**kwargs)
+            result = None
+            if isinstance(*args, BaseSession):
+                session = args[0]
+                ctx = session.ctx.copy()
+                user_id = ctx['user_id']
+                global CBL_LATEST_MSGID
+                msg_id = ctx['message_id']
+                nickname = ''
+                if 'card' in ctx['sender']:
+                    if ctx['sender']['card'] != '':
+                        nickname = ctx['sender']['card']
+                    else:
+                        nickname = ctx['sender']['nickname'] 
+                else:
+                    nickname = ctx['sender']['nickname']
+                # print(user_id)
+                if await black_list.is_black_list(user_id):
+                    if msg_id > CBL_LATEST_MSGID or CBL_LATEST_MSGID == 0:
+                        CBL_LATEST_MSGID = msg_id
+                        await session.send(nickname + alert_msg)
+                else:
+                    result = await func(*args)
+            # print (func.__name__)
+            return result
+        return warpper
+    return deco
 
 class special_user:
     __su_keys = [
@@ -176,9 +209,14 @@ class tools:
         minute = math.floor(sec / 60)
         hours = math.floor(minute / 60)
         days = math.floor(hours / 24)
-        hours = hours - days * 24
-        minute = minute - hours * 60 - days * 24 * 60
+        years = math.floor(days / 365)
+        days = days - years * 365
+        hours = hours - days * 24 - years * 365 * 24
+        minute = minute - hours * 60 - days * 24 * 60 - years * 365 * 24 * 60
+
         r_str = ''
+        if years > 0:
+            r_str = r_str + '%d年'%years
         if days > 0:
             r_str = r_str + '%d天'%days
         if hours > 0:

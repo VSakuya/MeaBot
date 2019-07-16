@@ -6,6 +6,7 @@ from nonebot import Message, MessageSegment
 
 from .data_source import *
 from functions import tools
+from functions import check_black_list
 
 __plugin_name__ = '唱歌'
 __plugin_usage__ = r"""根据网易云音乐黒羽翼堕天的电台《神楽mea的清楚time》选取歌曲播放
@@ -23,6 +24,7 @@ async def song_update(session: CommandSession):
     await session.send('更新完毕，现在mea一共会唱%s首歌！'%len(DATA_LIST))
 
 @on_command('sing', permission=perm.GROUP_MEMBER)
+@check_black_list()
 async def sing(session: CommandSession):
     song_name = session.get('song_name', prompt='你要我唱啥？')
     ctx = session.ctx.copy()
@@ -79,6 +81,7 @@ async def s_parser(session: CommandSession):
             session.pause('哈？数字！数字懂吗？3x7=27')
 
 @on_natural_language(keywords={'唱'})
+@check_black_list()
 async def sing_nl(session: NLPSession):
     stripped_msg = session.msg_text.strip()
     name = stripped_msg.replace('唱', '')

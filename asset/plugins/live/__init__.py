@@ -12,6 +12,7 @@ import random
 from .data_source import *
 from functions import special_user
 from functions import tools
+from functions import check_black_list
 from config import global_var
 from asset.plugins.mute import remove_all_mute_public
 
@@ -29,6 +30,7 @@ ALERT_LIMIT = 100
 ALERT_LIST = []
 
 @on_natural_language(keywords={'播了吗', '直播'})
+@check_black_list()
 async def live_status(session: NLPSession):
     ctx = session.ctx.copy()
     bot = session.bot

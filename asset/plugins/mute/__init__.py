@@ -12,6 +12,7 @@ from datetime import datetime
 from aiocqhttp.exceptions import Error as CQHttpError
 from .data_source import *
 from functions import tools
+from functions import check_black_list
 from config import global_var
 
 
@@ -63,6 +64,7 @@ async def mute_arrange(session: CommandSession):
     await session.send('整理完毕')
 
 @on_command('mute_list', aliases = ('迫害列表', '列表迫害'), permission=perm.GROUP_ADMIN)
+@check_black_list()
 async def mute_list(session: CommandSession):
     global DATA_LIST
     group_id = session.ctx['group_id']
@@ -301,6 +303,7 @@ async def hour_check():
             await write_mute_analyze_data(cur_ma_data)
 
 @on_command('mute_analyze', aliases = ('口球统计', '统计口球'), permission=perm.GROUP_MEMBER)
+@check_black_list()
 async def mute_analyze(session: CommandSession):
     ctx = session.ctx.copy()
     if not 'group_id' in ctx:
@@ -333,6 +336,7 @@ async def mute_analyze(session: CommandSession):
         await session.send(msg)
 
 @on_natural_language(keywords={'口球'})
+@check_black_list()
 async def nl_mute_draw(session: NLPSession):
     # mute_time = random.randint(60, 2591999)
     # mute_time = random.randint(60, 1200)
@@ -387,6 +391,7 @@ async def nl_mute_draw(session: NLPSession):
         await bot.send_msg(group_id=ctx['group_id'], message=msg)
 
 @on_natural_language(keywords={'献祭自己', '我来做祭品'})
+@check_black_list()
 async def sacrifice_mute(session: NLPSession):
     mute_time = 3600
     # mute_time = random.randint(60, 1200)
