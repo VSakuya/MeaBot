@@ -53,10 +53,13 @@ async def query_timer():
         if time_latest > time_local:
             print('send new twitter: ' + str(time_latest))
             msg = Message(tw_data[key_latest]['text'])
-            if 'image' in tw_data[key_latest]:
-                tw_pic_list = tw_data[key_latest]['image']
-                for pic_item in tw_pic_list:
-                    msg = msg + MessageSegment.image(pic_item)
+            try:
+                if 'image' in tw_data[key_latest]:
+                    tw_pic_list = tw_data[key_latest]['image']
+                    for pic_item in tw_pic_list:
+                        msg = msg + MessageSegment.image(pic_item)
+            except:
+                pass
             group_list = await bot.get_group_list()
             for item in group_list:
                 await bot.send_group_msg(group_id=item['group_id'], message=msg)

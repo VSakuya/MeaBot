@@ -104,15 +104,23 @@ async def query_timer():
         group_list = await bot.get_group_list()
         if is_started_B_live:
             for item in group_list:
-                await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
+                try:
+                    await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
+                except:
+                    pass
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment.share(url=json_data_B['url'], title=json_data_B['title'], content='mea开播啦', image_url=json_data_B['cover']))
         elif not is_started_B_live and is_started_YB_live:
             for item in group_list:
-                await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
+                try:
+                    await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
+                except:
+                    pass
                 await bot.send_group_msg(group_id=item['group_id'], message='Mea正在Youtube直播！！！')
         elif not (is_started_B_live or is_started_YB_live) and is_started_TC_live:
-            for item in group_list:
-                await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
+                try:
+                    await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
+                except:
+                    pass
                 await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment.share(url=json_data_TC['url'], title='Mea在TC台直播！', content='mea开播啦', image_url=json_data_TC['image']))
         global ALERT_LIST
         ALERT_LIST = await special_user.get_live_alert_list()
