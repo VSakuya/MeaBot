@@ -14,7 +14,7 @@ YB_CN_ID = 'UCWCc8tO-uUl_7SJXIKJACMw'
 # URL_YTB = 'https://www.youtube.com/results?search_query=神楽めあ+/+KaguraMea&sp=EgQQAUAB&pbj=1'
 # URL_YTB = 'https://www.youtube.com/results?search_query=UCiZLTDFNOGtM3s76kbudaOQ&sp=EgQQAUAB&pbj=1'
 URL_YTB = 'https://www.youtube.com/channel/UCWCc8tO-uUl_7SJXIKJACMw'
-URL_YTB = 'https://www.youtube.com/channel/UCWCc8tO-uUl_7SJXIKJACMw/videos'
+# URL_YTB = 'https://www.youtube.com/channel/UCWCc8tO-uUl_7SJXIKJACMw/videos'
 # URL_YTB = 'https://www.youtube.com/channel/UC1opHUrw8rvnsadT-iGp7Cg'
 URL_TC = 'https://twitcasting.tv/kaguramea_vov'
 
