@@ -385,7 +385,7 @@ async def nl_mute_draw(session: NLPSession):
     elif max_result == 31:
         message = message + '\n并且持平了本月最佳！'
     await bot.send_msg(group_id=ctx['group_id'], message=message)
-    rand_num = random.uniform(1, 100)
+    rand_num = random.uniform(0, 99)
     global CUR_REMOVE_MUTE_PERCENTAGE
     if rand_num <= CUR_REMOVE_MUTE_PERCENTAGE:
         msg = 'mea捏，突然觉得心情好，所以还是给%s你解除了吧（按进去让你吞下）'%nickname
