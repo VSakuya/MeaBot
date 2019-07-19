@@ -200,7 +200,11 @@ async def handle_group_message(ctx: Context_T):
     if ctx['user_id'] == 1000000:
         raw_message = ctx['raw_message']
         if '禁言' in raw_message:
-            banned_id = int(raw_message[raw_message.rfind('(') + 1: raw_message.rfind(')')])
+            banned_id = 0
+            if not '(' in raw_message:
+                banned_id = int(raw_message[0: raw_message.rfind('被管理员') - 1])
+            else:
+                banned_id = int(raw_message[raw_message.find('(') + 1: raw_message.rfind(')')])
             print(banned_id)
             if '解除' in raw_message:
                 pass
