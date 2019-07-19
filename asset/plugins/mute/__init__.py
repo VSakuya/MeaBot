@@ -406,7 +406,7 @@ async def nl_mute_draw(session: NLPSession):
     CUR_REMOVE_MUTE_PERCENTAGE[str(ctx['group_id'])] = CUR_REMOVE_MUTE_PERCENTAGE[str(ctx['group_id'])] + 1
 
 
-@on_command('mute_analyze', aliases = ('当前豁免几率', '获取豁免几率'), permission=perm.GROUP_MEMBER)
+@on_command('get_remove_mute_percentage', aliases = ('当前豁免几率', '获取豁免几率'), permission=perm.GROUP_MEMBER)
 @check_black_list()
 async def get_remove_mute_percentage(session: CommandSession):
     global CUR_REMOVE_MUTE_PERCENTAGE
