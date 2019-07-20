@@ -2,6 +2,8 @@ import json
 import os
 from functions import tools
 
+DEF_REMOVE_MUTE_PERCENTAGE = 10
+
 def check_file():
     if not os.path.exists(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'mute.json'):
         empty_list = []
@@ -153,37 +155,32 @@ async def compare_mute_time(sec: int, user_id: int, group_id: int, nickname: str
     await write_mute_analyze_data(cur_ma_data)
     return result
 
-# list_example = [2019, 7, 9, 20, 7] # y, m, d, h, weekday
-# async def check_analyze_update(date_list: list):
-#     cur_ma_data = await get_mute_analyze_data()
-#     if not 'update_time' in cur_ma_data:
-#         cur_ma_data['update_time'] = []
-#     if date_list == cur_ma_data['update_time']:
-#         return
-#     else:
-#         if date_list[3] == 0:
-#             for key in cur_ma_data:
-#                 if tools.is_int(key):
-#                     del cur_ma_data[key]['max_cur_day']['sec']
-#                     del cur_ma_data[key]['max_cur_day']['user_id']
-#                     del cur_ma_data[key]['max_cur_day']['nickname']
-#             if date_list[4] == 1:
-#                 for key in cur_ma_data:
-#                     if tools.is_int(key):
-#                         del cur_ma_data[key]['max_cur_week']['sec']
-#                         del cur_ma_data[key]['max_cur_week']['user_id']
-#                         del cur_ma_data[key]['max_cur_week']['nickname']
-#             if date_list[2] == 1:
-#                 for key in cur_ma_data:
-#                     if tools.is_int(key):
-#                         del cur_ma_data[key]['max_cur_month']['sec']
-#                         del cur_ma_data[key]['max_cur_month']['user_id']
-#                         del cur_ma_data[key]['max_cur_month']['nickname']
-#             cur_ma_data['update_time'] = date_list
-#             await write_mute_analyze_data(cur_ma_data)
 
+async def update_remove_percentage(group_id: int ,new_value: int):
+    cur_ma_data = await get_mute_analyze_data()
+    if not 'cur_remove_percentage' in cur_ma_data:
+        cur_ma_data['cur_remove_percentage'] = {}
+    cur_ma_data['cur_remove_percentage'][str(group_id)] = new_value
+    result = await write_mute_analyze_data(cur_ma_data)
+    return result
+
+async def get_remove_percentage(group_id: int):
+    cur_ma_data = await get_mute_analyze_data()
+    global DEF_REMOVE_MUTE_PERCENTAGE
+    if not 'cur_remove_percentage' in cur_ma_data or not str(group_id) in cur_ma_data['cur_remove_percentage']:
+        return DEF_REMOVE_MUTE_PERCENTAGE
+    return cur_ma_data['cur_remove_percentage'][str(group_id)]
     
-    
+async def reset_remove_percentage():
+    cur_ma_data = await get_mute_analyze_data()
+    global DEF_REMOVE_MUTE_PERCENTAGE
+    if not 'cur_remove_percentage' in cur_ma_data:
+        return True
+    for key in cur_ma_data['cur_remove_percentage']:
+        cur_ma_data['cur_remove_percentage'][key] = DEF_REMOVE_MUTE_PERCENTAGE
+    result = await write_mute_analyze_data(cur_ma_data)
+    return result
+
 
 async def write_mute_analyze_data(in_dict: dict) -> bool:
     with open(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'mute_analyze.json' , 'w', encoding='utf-8') as data_json:

@@ -31,7 +31,7 @@ __plugin_usage__ = """根据关键字禁言（需管理员权限）
 
 口球 （任何人 普通包含：上限30分钟；包含“睡眠”：上限8小时;包含“大”字：上限1天；包含“终极”：上限30天，请在管理员陪同下尝试；所有口球有1%的几率会被自动解除哦）
 
-当前豁免几率/获取豁免几率 (群成员)
+当前豁免几率/当前赦免概率 (群成员)
 
 献祭自己/我来做祭品 （任何人 献祭一个小时来换取mea直播机会）
 
@@ -45,8 +45,6 @@ DATA_LIST = None
 
 REMOVE_IGNORE_LIST = ['考试', '备考', '高考', 'ks']
 
-DEF_REMOVE_MUTE_PERCENTAGE = 10
-CUR_REMOVE_MUTE_PERCENTAGE = {}
 
 @on_command('save_paryi', aliases = ('救救帕里', 'bot管理员拯救'), permission=perm.SUPERUSER)
 async def save_paryi(session: CommandSession):
@@ -267,8 +265,7 @@ async def hour_check():
         return
     else:
         if date_list[3] == 0:
-            global CUR_REMOVE_MUTE_PERCENTAGE
-            CUR_REMOVE_MUTE_PERCENTAGE = {}
+            await reset_remove_percentage()
             global bot
             for key in cur_ma_data:
                 if tools.is_int(key):
@@ -393,28 +390,49 @@ async def nl_mute_draw(session: NLPSession):
         message = message + '\n并且持平了本月最佳！'
     await bot.send_msg(group_id=ctx['group_id'], message=message)
     rand_num = random.randint(0, 999)
-    global CUR_REMOVE_MUTE_PERCENTAGE
-    if not str(ctx['group_id']) in CUR_REMOVE_MUTE_PERCENTAGE:
-        global DEF_REMOVE_MUTE_PERCENTAGE
-        CUR_REMOVE_MUTE_PERCENTAGE[str(ctx['group_id'])] = DEF_REMOVE_MUTE_PERCENTAGE
-    if rand_num <= CUR_REMOVE_MUTE_PERCENTAGE[str(ctx['group_id'])]:
+    cur_per = await get_remove_percentage(ctx['group_id'])
+    if rand_num <= cur_per:
         msg = 'mea捏，突然觉得心情好，所以还是给%s你解除了吧（按进去让你吞下）'%nickname
         await bot.send_msg(group_id=ctx['group_id'], message=msg)
         await bot.set_group_ban(group_id=ctx['group_id'], user_id=ctx['user_id'], duration=0)
         msg = '%s你开心吧？记得下次直播的时候打钱哦~~'%nickname
         await bot.send_msg(group_id=ctx['group_id'], message=msg)
-    CUR_REMOVE_MUTE_PERCENTAGE[str(ctx['group_id'])] = CUR_REMOVE_MUTE_PERCENTAGE[str(ctx['group_id'])] + 1
+    await update_remove_percentage(group_id = ctx['group_id'], new_value = cur_per + 1)
 
 
-@on_command('get_remove_mute_percentage', aliases = ('当前豁免几率', '获取豁免几率'), permission=perm.GROUP_MEMBER)
+@on_command('get_remove_mute_percentage', aliases = ('当前豁免几率', '当前赦免概率'), permission=perm.GROUP_MEMBER)
 @check_black_list()
 async def get_remove_mute_percentage(session: CommandSession):
     global CUR_REMOVE_MUTE_PERCENTAGE
     ctx = session.ctx.copy()
-    if not str(ctx['group_id']) in CUR_REMOVE_MUTE_PERCENTAGE:
-        global DEF_REMOVE_MUTE_PERCENTAGE
-        CUR_REMOVE_MUTE_PERCENTAGE[str(ctx['group_id'])] = DEF_REMOVE_MUTE_PERCENTAGE
-    await session.send('当前被饶恕的几率是' + str(CUR_REMOVE_MUTE_PERCENTAGE[str(ctx['group_id'])] / 10) + '%哦')
+    cur_per = await get_remove_percentage(group_id = ctx['group_id'])
+    await session.send('当前被饶恕的几率是' + str(cur_per/10) + '%哦')
+
+@on_command('update_remove_percentage_c', aliases = ('更新豁免几率', '更新赦免概率'), permission=perm.SUPERUSER)
+@check_black_list()
+async def update_remove_percentage_c(session: CommandSession):
+    ctx = session.ctx.copy()
+    if not 'group_id' in ctx:
+        return
+    new_value = session.get('new_value', prompt = '新的参数是？')
+    result = await update_remove_percentage(group_id = ctx['group_id'], new_value = new_value)
+    if result:
+        await session.send('成功！')
+    else:
+        await session.send('发生错误！')
+
+@update_remove_percentage_c.args_parser
+async def urpc_parser(session: CommandSession):
+    stripped_arg = session.current_arg_text.strip()
+    if session.is_first_run:
+        if stripped_arg and tools.is_int(stripped_arg):
+            session.state['new_value'] = int(stripped_arg)
+            return
+    else:
+        if tools.is_int(stripped_arg):
+            session.state['new_value'] = int(stripped_arg)
+            return
+        session.finish('参数有错！')
 
 @on_natural_language(keywords={'献祭自己', '我来做祭品'})
 @check_black_list()
