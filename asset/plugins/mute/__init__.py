@@ -29,7 +29,7 @@ __plugin_usage__ = """根据关键字禁言（需管理员权限）
 
 ！代抽口球/口球代抽 (群管理员 +命令+群昵称（可不完整）或完整qq号) 
 
-口球 （任何人 普通包含：上限30分钟；包含“睡眠”：上限8小时;包含“大”字：上限1天；包含“终极”：上限30天，请在管理员陪同下尝试；所有口球有1%的几率会被自动解除哦）
+口球 （任何人 普通包含：上限30分钟；包含“睡眠”：上限8小时;包含“大”字：上限1天；包含“终极”：上限30天，请在管理员陪同下尝试）
 
 当前豁免几率/当前赦免概率 (群成员)
 
@@ -265,20 +265,22 @@ async def hour_check():
         return
     else:
         if date_list[3] == 0:
-            await reset_remove_percentage()
             global bot
             for key in cur_ma_data:
                 if tools.is_int(key):
                     if not 'max_cur_day' in cur_ma_data[key]:
                         continue
-                    day_msg = '本日共发出口球%s，本日最佳是%s：%s'%(
+                    cur_per = await get_remove_percentage(int(key))
+                    day_msg = '本日共发出口球%s，\n本日最佳是%s：%s\n本日最终赦免概率是%s'%(
                         tools.sec_to_str(cur_ma_data[key]['sum_this_day']),
                         '和'.join(cur_ma_data[key]['max_cur_day']['nickname']),
-                        tools.sec_to_str(cur_ma_data[key]['max_cur_day']['sec'])
+                        tools.sec_to_str(cur_ma_data[key]['max_cur_day']['sec']),
+                        str(cur_per / 10)
                     )
                     await bot.send_group_msg(group_id = int(key), message = day_msg)
                     cur_ma_data[key]['sum_this_day'] = 0
                     del cur_ma_data[key]['max_cur_day']
+            await reset_remove_percentage()
             if date_list[4] == 1:
                 for key in cur_ma_data:
                     if tools.is_int(key):
