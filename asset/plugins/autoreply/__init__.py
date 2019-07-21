@@ -64,14 +64,28 @@ async def add_autoreply(session: CommandSession):
         await session.send('诺，搞定了，真麻烦\n' + nickname + '你的申请已经提交上去啦\n' + '申请id是：' + str(result) + '\n' + '请等待bot管理员那懒狗审核')
         temp_list = await get_key_t_list()
         count = len(temp_list)
-        if not group_id:
-            super_user = global_var.get_super_users()
-            for user in super_user:
-                await bot.send_private_msg(user_id = user, message = Message(str(ctx['user_id']) + '提交了针对群：' + str(group_id) + '的自动回复关键字“' + key_word + '”的自动回复申请，当前还有' + str(count) + '个申请尚未处理！'))
-        else:
+        all_group_list = await bot.get_group_list()
+        group_name = ''
+        for group in all_group_list:
+            if group_id == group['group_id']:
+                group_name = group['group_name']
+
+        msg = '%s(%s)提交了针对群%s(%s)：的自动回复关键字“%s”的自动回复申请，当前还有%s个申请尚未处理！'%(
+            nickname,
+            str(group_id),
+            group_name,
+            str(group_id),
+            key_word,
+            str(count)
+        )
+        if group_id:
             check_users = await special_user.get_auto_reply_checker_data_by_group_id(int(group_id))
-            for user in check_users:
-                await bot.send_private_msg(user_id = user, message = Message(str(ctx['user_id']) + '提交了针对群：' + str(group_id) + '的自动回复关键字“' + key_word + '”的自动回复申请，当前还有' + str(count) + '个申请尚未处理！'))
+            if check_users:
+                for user in check_users:
+                    await bot.send_private_msg(user_id = user, message = msg)
+        super_user = global_var.get_super_users()
+        for user in super_user:
+            await bot.send_private_msg(user_id = user, message = msg)
     else:
         await session.send('发生错误！')
 
@@ -206,97 +220,97 @@ async def start_check(session: CommandSession):
         return
 
     IS_CHECKING = True
-    try:
-        CURRENT_CHECKING_USER = user_id
-        all_group_list = await bot.get_group_list()
-        for key in dict_data:
-            if not key == 'max_id':
-                status = None
-                item_data = dict_data[key]
-                key_word = item_data['key']
-                message = item_data['message']
-                group_id = item_data['group_id']
-                submit_user_id = item_data['submit_user_id']
+    CURRENT_CHECKING_USER = user_id
+    # try:
+    all_group_list = await bot.get_group_list()
+    for key in dict_data:
+        if not key == 'max_id':
+            status = None
+            item_data = dict_data[key]
+            key_word = item_data['key']
+            message = item_data['message']
+            group_id = item_data['group_id']
+            submit_user_id = item_data['submit_user_id']
 
-                if not session.current_key or session.current_key == 'status' + str(int(key) - 1):
-                    group_name = ''
-                    for group in all_group_list:
-                        if group_id == group['group_id']:
-                            group_name = group['group_name']
-                    group_m_info = await bot.get_group_member_info(group_id = group_id, user_id = submit_user_id)
-                    nickname = ''
-                    if 'card' in group_m_info:
-                        if group_m_info['card'] != '':
-                            nickname = group_m_info['card']
-                        else:
-                            nickname = group_m_info['nickname'] 
+            if not session.current_key or session.current_key == 'status' + str(int(key) - 1):
+                group_name = ''
+                for group in all_group_list:
+                    if group_id == group['group_id']:
+                        group_name = group['group_name']
+                group_m_info = await bot.get_group_member_info(group_id = group_id, user_id = submit_user_id)
+                nickname = ''
+                if 'card' in group_m_info:
+                    if group_m_info['card'] != '':
+                        nickname = group_m_info['card']
                     else:
-                        nickname = group_m_info['nickname']
-                    key_str = '用户：%s(%s)申请群：%s(%s)的自动回复，关键字：“%s”，回复：'%(
-                        nickname,
-                        str(submit_user_id),
-                        group_name,
-                        str(group_id),
-                        key_word 
-                    )
-                    await bot.send_private_msg(user_id = ctx['user_id'], message = key_str)
-                    ctx['message'] = message
-                    is_success = True
-                    try:
-                        await bot.send_msg(**ctx)
-                    except:
-                        is_success = False
-                        ctx['message'] = '内容有错误！！！'
-                        await bot.send_msg(**ctx)
-                    if not is_success:
-                        await del_reply_t_data(key)
-                        continue
-                status = session.get('status' + str(key), prompt='是否同意？（是/否/拉黑）')
-                if status == 0:
-                    reason = session.get('reason' + str(key), prompt='为啥啊？给点理由呗')
-                    session.current_key = None
-                    result = await del_reply_t_data(key)
-                    if result:
-                        await bot.send_private_msg(user_id = user_id, message = '已成功拒绝')
-                        if group_id:
-                            await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢\n理由是：' + reason))
-                        else:
-                            await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢\n理由是：' + reason))
+                        nickname = group_m_info['nickname'] 
+                else:
+                    nickname = group_m_info['nickname']
+                key_str = '用户：%s(%s)申请群：%s(%s)的自动回复，关键字：“%s”，回复：'%(
+                    nickname,
+                    str(submit_user_id),
+                    group_name,
+                    str(group_id),
+                    key_word 
+                )
+                await bot.send_private_msg(user_id = ctx['user_id'], message = key_str)
+                ctx['message'] = message
+                is_success = True
+                try:
+                    await bot.send_msg(**ctx)
+                except:
+                    is_success = False
+                    ctx['message'] = '内容有错误！！！'
+                    await bot.send_msg(**ctx)
+                if not is_success:
+                    await del_reply_t_data(key)
+                    continue
+            status = session.get('status' + str(key), prompt='是否同意？（是/否/拉黑）')
+            if status == 0:
+                reason = session.get('reason' + str(key), prompt='为啥啊？给点理由呗')
+                session.current_key = None
+                result = await del_reply_t_data(key)
+                if result:
+                    await bot.send_private_msg(user_id = user_id, message = '已成功拒绝')
+                    if group_id:
+                        await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢\n理由是：' + reason))
                     else:
-                        await bot.send_private_msg(user_id = user_id, message = '发生错误！')
-                elif status == 1:
-                    session.current_key = None
-                    del_result = await del_reply_t_data(key)
-                    result = await add_reply_data(group_id = group_id, key = key_word, message = message, submit_user_id = submit_user_id, checked_user_id = user_id)
-                    if result and del_result:
-                        await bot.send_private_msg(user_id = user_id, message = '已成功同意')
+                        await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢\n理由是：' + reason))
+                else:
+                    await bot.send_private_msg(user_id = user_id, message = '发生错误！')
+            elif status == 1:
+                session.current_key = None
+                del_result = await del_reply_t_data(key)
+                result = await add_reply_data(group_id = group_id, key = key_word, message = message, submit_user_id = submit_user_id, checked_user_id = user_id)
+                if result and del_result:
+                    await bot.send_private_msg(user_id = user_id, message = '已成功同意')
 
-                        if group_id:
-                            await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被同意了呢'))
-                        else:
-                            await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被同意了呢'))
+                    if group_id:
+                        await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被同意了呢'))
                     else:
-                        await bot.send_private_msg(user_id = user_id, message = '发生错误！')
-                elif status == 2:
-                    reason = session.get('reason', prompt='为啥啊？给点理由呗')
-                    session.current_key = None
-                    bl_result= await black_list.add_black_list_data(submit_user_id)
-                    result = await del_reply_t_data(key)
-                    if result and bl_result:
-                        await bot.send_private_msg(user_id = user_id, message = '已成功添加黑名单！并且因为违规被永久添加黑名单！！！')
-                        
-                        if group_id:
-                            await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢！并且因为违规被永久添加黑名单！！！\n理由是：' + reason))
-                        else:
-                            await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢！并且因为违规被永久添加黑名单！！！\n理由是：' + reason))
+                        await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被同意了呢'))
+                else:
+                    await bot.send_private_msg(user_id = user_id, message = '发生错误！')
+            elif status == 2:
+                reason = session.get('reason', prompt='为啥啊？给点理由呗')
+                session.current_key = None
+                bl_result= await black_list.add_black_list_data(submit_user_id)
+                result = await del_reply_t_data(key)
+                if result and bl_result:
+                    await bot.send_private_msg(user_id = user_id, message = '已成功添加黑名单！并且因为违规被永久添加黑名单！！！')
+                    
+                    if group_id:
+                        await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢！并且因为违规被永久添加黑名单！！！\n理由是：' + reason))
                     else:
-                        await bot.send_private_msg(user_id = user_id, message = '发生错误！')
-        IS_CHECKING = False
-    except Exception as e:
-        traceback.print_exc()
-        logger.error('输出审核自回信息错误！')
-        IS_CHECKING = False
-        session.finish('发生未知错误！')
+                        await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢！并且因为违规被永久添加黑名单！！！\n理由是：' + reason))
+                else:
+                    await bot.send_private_msg(user_id = user_id, message = '发生错误！')
+    IS_CHECKING = False
+    # except Exception as e:
+    #     traceback.print_exc()
+    #     logger.error('输出审核自回信息错误！')
+    #     IS_CHECKING = False
+    #     session.finish('发生未知错误！')
 
 @start_check.args_parser
 async def sc_parser(session: CommandSession):

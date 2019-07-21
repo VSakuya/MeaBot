@@ -33,8 +33,8 @@ async def lastest_tweet(session: NLPSession):
         i = i+1
     i = 0
     
-@nonebot.scheduler.scheduled_job('interval', seconds=60, id = 'check_twitter', jitter = 10)
-async def query_timer():
+# @nonebot.scheduler.scheduled_job('interval', seconds=60, id = 'check_twitter', jitter = 10)
+async def check_twitter():
     bot = nonebot.get_bot()
     tw_data = await pull_twitter_data()
     if not tw_data:

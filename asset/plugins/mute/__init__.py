@@ -247,14 +247,10 @@ async def handle_group_message(ctx: Context_T):
              break
 
 
-@nonebot.scheduler.scheduled_job('cron', minute='*')
-async def hour_check():
-    now = datetime.now(pytz.timezone('Asia/Shanghai'))
-    cur_min = now.minute
-    if cur_min >= 10:
-        return
+# @nonebot.scheduler.scheduled_job('cron', minute='*')
+async def daily_update(year, month, day, hour, weeknum):
+    date_list = [year, month, day, hour, weeknum]
     logger.info('check mute analyze')
-    date_list = [now.year, now.month, now.day, now.hour, datetime.isoweekday(now)]
     cur_ma_data = await get_mute_analyze_data()
     if not 'update_time' in cur_ma_data:
         cur_ma_data['update_time'] = []
