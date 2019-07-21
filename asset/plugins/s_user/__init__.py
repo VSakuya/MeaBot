@@ -157,7 +157,6 @@ async def aarcu_parser(session: CommandSession):
 bot = nonebot.get_bot()
 @bot.on_request('friend')
 async def handle_friend_message(ctx: Context_T):
-    print(ctx)
     allow_friend_list = await special_user.get_allowed_friend_list()
     if ctx['user_id'] in allow_friend_list:
             await bot.set_friend_add_request(flag=ctx['flag'], approve=True)

@@ -1,5 +1,6 @@
 import json
 import os
+from nonebot import logger
 from config import global_var
 import urllib.request
 import time
@@ -23,7 +24,7 @@ def check_file():
         with open(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'autoreply_temp.json' , 'w', encoding='utf-8') as data_json:
             json.dump(empty_dict, data_json, ensure_ascii = False)
             
-    print('autoreply file checked')
+    logger.info('autoreply file checked')
 
 #raw_message用于防止首字跟呼号重复被自动去除
 #exp:'咩咩[CQ:image,file=9A1B9AA4C2A675F91370D5F9499C17EF.jpg]'

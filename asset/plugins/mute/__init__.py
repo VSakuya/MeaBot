@@ -7,6 +7,7 @@ from nonebot.typing import Context_T
 from nonebot import on_command, CommandSession, permission as perm
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot import Message, MessageSegment
+from nonebot import logger
 
 from datetime import datetime
 from aiocqhttp.exceptions import Error as CQHttpError
@@ -53,11 +54,8 @@ async def save_paryi(session: CommandSession):
     try:
         g_list = await bot.get_group_list()
     except:
-        print('获取群数据错误！')
-    # sp_list = await special_user
-    # print(g_list)
+        logger.warn('获取群数据错误！')
     for item in g_list:
-        # print(item)
         await bot.set_group_ban(group_id=item['group_id'], user_id=904853953, duration=0)
 
 @on_command('mute_arrange', aliases = ('整理迫害', '迫害整理'), permission=perm.SUPERUSER)
@@ -203,7 +201,6 @@ async def handle_group_message(ctx: Context_T):
                 banned_id = int(raw_message[0: raw_message.rfind('被管理员') - 1])
             else:
                 banned_id = int(raw_message[raw_message.find('(') + 1: raw_message.rfind(')')])
-            print(banned_id)
             if '解除' in raw_message:
                 pass
             else:
@@ -256,7 +253,7 @@ async def hour_check():
     cur_min = now.minute
     if cur_min >= 10:
         return
-    print('check analyze')
+    logger.info('check mute analyze')
     date_list = [now.year, now.month, now.day, now.hour, datetime.isoweekday(now)]
     cur_ma_data = await get_mute_analyze_data()
     if not 'update_time' in cur_ma_data:

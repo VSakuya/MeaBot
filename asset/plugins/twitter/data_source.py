@@ -6,6 +6,8 @@ import os
 import urllib.request
 import urllib.parse
 
+from nonebot import logger
+
 TWITTER_URL = 'https://twitter.com/KaguraMea_VoV'
 # TWITTER_URL = 'https://twitter.com/VSakuya'
 
@@ -15,7 +17,7 @@ def check_file():
         with open(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'twitter.json' , 'w', encoding='utf-8') as data_json:
             json.dump(empty_dict, data_json, ensure_ascii = False)
     
-    print('twitter file checked')
+    logger.info('twitter file checked')
 
 async def get_html_soup(url : str):
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0'
@@ -26,7 +28,7 @@ async def get_html_soup(url : str):
     try:
         html = urllib.request.urlopen(req).read().decode('utf-8')
     except:
-        print(url + ' get failed.')
+        logger.warn(url + ' get failed.')
         return False
     soup = BeautifulSoup(html,'html.parser')
     return soup

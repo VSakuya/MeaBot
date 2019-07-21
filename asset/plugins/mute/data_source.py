@@ -2,6 +2,8 @@ import json
 import os
 from functions import tools
 
+from nonebot import logger
+
 DEF_REMOVE_MUTE_PERCENTAGE = 10
 
 def check_file():
@@ -15,7 +17,7 @@ def check_file():
         with open(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'mute_analyze.json' , 'w', encoding='utf-8') as data_json:
             json.dump(empty_dict, data_json, ensure_ascii = False)
 
-    print('mute file checked')
+    logger.info('mute file checked')
 
 async def arrange_data():
     org_list = await get_mute_data()

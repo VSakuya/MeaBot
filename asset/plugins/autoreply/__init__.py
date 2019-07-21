@@ -1,9 +1,11 @@
 import asyncio
 import time
+import traceback
 
 from nonebot import on_command, CommandSession
 from nonebot import on_natural_language, NLPSession, IntentCommand, permission as perm
 from nonebot import Message, MessageSegment
+from nonebot.log import logger
 
 from .data_source import *
 from config import global_var
@@ -139,7 +141,6 @@ async def aa_parser(session: CommandSession):
             session.state['group_id'] = 0
 
     if session.current_key == 'message':
-        print(session.ctx['message'])
         new_msg = await meassage_convert(session.ctx['message'], session.ctx['raw_message'])
         if not new_msg:
             session.finish('发生未知错误！！结束当前进程！')
@@ -205,72 +206,97 @@ async def start_check(session: CommandSession):
         return
 
     IS_CHECKING = True
-    CURRENT_CHECKING_USER = user_id
+    try:
+        CURRENT_CHECKING_USER = user_id
+        all_group_list = await bot.get_group_list()
+        for key in dict_data:
+            if not key == 'max_id':
+                status = None
+                item_data = dict_data[key]
+                key_word = item_data['key']
+                message = item_data['message']
+                group_id = item_data['group_id']
+                submit_user_id = item_data['submit_user_id']
 
-    for key in dict_data:
-        if not key == 'max_id':
-            status = None
-            item_data = dict_data[key]
-            key_word = item_data['key']
-            message = item_data['message']
-            group_id = item_data['group_id']
-            submit_user_id = item_data['submit_user_id']
+                if not session.current_key or session.current_key == 'status' + str(int(key) - 1):
+                    group_name = ''
+                    for group in all_group_list:
+                        if group_id == group['group_id']:
+                            group_name = group['group_name']
+                    group_m_info = await bot.get_group_member_info(group_id = group_id, user_id = submit_user_id)
+                    nickname = ''
+                    if 'card' in group_m_info:
+                        if group_m_info['card'] != '':
+                            nickname = group_m_info['card']
+                        else:
+                            nickname = group_m_info['nickname'] 
+                    else:
+                        nickname = group_m_info['nickname']
+                    key_str = '用户：%s(%s)申请群：%s(%s)的自动回复，关键字：“%s”，回复：'%(
+                        nickname,
+                        str(submit_user_id),
+                        group_name,
+                        str(group_id),
+                        key_word 
+                    )
+                    await bot.send_private_msg(user_id = ctx['user_id'], message = key_str)
+                    ctx['message'] = message
+                    is_success = True
+                    try:
+                        await bot.send_msg(**ctx)
+                    except:
+                        is_success = False
+                        ctx['message'] = '内容有错误！！！'
+                        await bot.send_msg(**ctx)
+                    if not is_success:
+                        await del_reply_t_data(key)
+                        continue
+                status = session.get('status' + str(key), prompt='是否同意？（是/否/拉黑）')
+                if status == 0:
+                    reason = session.get('reason' + str(key), prompt='为啥啊？给点理由呗')
+                    session.current_key = None
+                    result = await del_reply_t_data(key)
+                    if result:
+                        await bot.send_private_msg(user_id = user_id, message = '已成功拒绝')
+                        if group_id:
+                            await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢\n理由是：' + reason))
+                        else:
+                            await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢\n理由是：' + reason))
+                    else:
+                        await bot.send_private_msg(user_id = user_id, message = '发生错误！')
+                elif status == 1:
+                    session.current_key = None
+                    del_result = await del_reply_t_data(key)
+                    result = await add_reply_data(group_id = group_id, key = key_word, message = message, submit_user_id = submit_user_id, checked_user_id = user_id)
+                    if result and del_result:
+                        await bot.send_private_msg(user_id = user_id, message = '已成功同意')
 
-            if not session.current_key or session.current_key == 'status' + str(int(key) - 1):
-                key_str = '用户：' + str(submit_user_id) + '申请群：' + str(group_id) + '的自动回复，关键字：“' + key_word + '”，回复：'
-                await bot.send_private_msg(user_id = ctx['user_id'], message = key_str)
-                ctx['message'] = message
-                is_success = True
-                try:
-                    await bot.send_msg(**ctx)
-                except:
-                    is_success = False
-                    ctx['message'] = '内容有错误！！！'
-                    await bot.send_msg(**ctx)
-                if not is_success:
-                    await del_reply_t_data(key)
-                    continue
-            status = session.get('status' + str(key), prompt='是否同意？（是/否/拉黑）')
-            if status == 0:
-                reason = session.get('reason' + str(key), prompt='为啥啊？给点理由呗')
-                session.current_key = None
-                result = await del_reply_t_data(key)
-                if result:
-                    await bot.send_private_msg(user_id = user_id, message = '已成功拒绝')
-                    if group_id:
-                        await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢\n理由是：' + reason))
+                        if group_id:
+                            await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被同意了呢'))
+                        else:
+                            await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被同意了呢'))
                     else:
-                        await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢\n理由是：' + reason))
-                else:
-                    await bot.send_private_msg(user_id = user_id, message = '发生错误！')
-            elif status == 1:
-                session.current_key = None
-                del_result = await del_reply_t_data(key)
-                result = await add_reply_data(group_id = group_id, key = key_word, message = message, submit_user_id = submit_user_id, checked_user_id = user_id)
-                if result and del_result:
-                    await bot.send_private_msg(user_id = user_id, message = '已成功同意')
-
-                    if group_id:
-                        await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被同意了呢'))
+                        await bot.send_private_msg(user_id = user_id, message = '发生错误！')
+                elif status == 2:
+                    reason = session.get('reason', prompt='为啥啊？给点理由呗')
+                    session.current_key = None
+                    bl_result= await black_list.add_black_list_data(submit_user_id)
+                    result = await del_reply_t_data(key)
+                    if result and bl_result:
+                        await bot.send_private_msg(user_id = user_id, message = '已成功添加黑名单！并且因为违规被永久添加黑名单！！！')
+                        
+                        if group_id:
+                            await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢！并且因为违规被永久添加黑名单！！！\n理由是：' + reason))
+                        else:
+                            await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢！并且因为违规被永久添加黑名单！！！\n理由是：' + reason))
                     else:
-                        await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被同意了呢'))
-                else:
-                    await bot.send_private_msg(user_id = user_id, message = '发生错误！')
-            elif status == 2:
-                reason = session.get('reason', prompt='为啥啊？给点理由呗')
-                session.current_key = None
-                bl_result= await black_list.add_black_list_data(submit_user_id)
-                result = await del_reply_t_data(key)
-                if result and bl_result:
-                    await bot.send_private_msg(user_id = user_id, message = '已成功添加黑名单！并且因为违规被永久添加黑名单！！！')
-                    
-                    if group_id:
-                        await bot.send_group_msg(group_id = group_id, message = MessageSegment.at(user_id = submit_user_id) + Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢！并且因为违规被永久添加黑名单！！！\n理由是：' + reason))
-                    else:
-                        await bot.send_private_msg(user_id = submit_user_id, message = Message('你的自动回复申请id：' + str(key) + '，关键字：“' + key_word + '”被拒绝了呢！并且因为违规被永久添加黑名单！！！\n理由是：' + reason))
-                else:
-                    await bot.send_private_msg(user_id = user_id, message = '发生错误！')
-    IS_CHECKING = False
+                        await bot.send_private_msg(user_id = user_id, message = '发生错误！')
+        IS_CHECKING = False
+    except Exception as e:
+        traceback.print_exc()
+        logger.error('输出审核自回信息错误！')
+        IS_CHECKING = False
+        session.finish('发生未知错误！')
 
 @start_check.args_parser
 async def sc_parser(session: CommandSession):

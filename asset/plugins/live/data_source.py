@@ -1,11 +1,14 @@
 import json
 import os
+import traceback
 import requests
 from bs4 import BeautifulSoup
 from urllib import request as req
 from urllib.request import urlopen
 import urllib.request
 import urllib.parse
+
+from nonebot import logger
 
 B_ROOM_NUM = 349991143
 YB_CN_ID = 'UCWCc8tO-uUl_7SJXIKJACMw'
@@ -24,7 +27,7 @@ def check_file():
         with open(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'live.json' , 'w', encoding='utf-8') as data_json:
             json.dump(empty_dict, data_json, ensure_ascii = False)
             
-    print('live file checked')
+    logger.info('live file checked')
 
 async def get_B_live_data():
     global B_ROOM_NUM
@@ -35,7 +38,8 @@ async def get_B_live_data():
             json_data = result.json()['data']
             return json_data
         except Exception as e:
-            print (e)
+            traceback.print_exc()
+            logger.warn('B站数据获取错误！')
             return False
     else:
         return False
@@ -60,12 +64,13 @@ async def get_YB_live_data():
         response_ytb = req.urlopen(request_ytb)
     except:
         return False
-        print('YTB data gather failed.')
+        traceback.print_exc()
+        logger.warn('Y站数据获取错误！')
     html = response_ytb.read().decode('utf8')
     
     soup = BeautifulSoup(html,'html.parser')
     if(soup):
-        print(str(soup).find('LIVE NOW') )
+        # print(str(soup).find('LIVE NOW') )
         if str(soup).find('LIVE NOW') == -1:
             return False
         else:
@@ -141,7 +146,8 @@ async def get_TC_live_data():
     try:
         html = urllib.request.urlopen(req).read().decode('utf-8')
     except:
-        print('TC data gather failed.')
+        traceback.print_exc()
+        logger.warn('TC站数据获取错误！')
         return False
 
     soup = BeautifulSoup(html,'html.parser')

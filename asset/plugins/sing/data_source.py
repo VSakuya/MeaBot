@@ -4,6 +4,8 @@ import re
 import platform
 from config import global_var
 
+from nonebot import logger
+
 SONGS_PATH = global_var.get_coolq_dir() + os.sep + 'data' + os.sep + 'record' + os.sep + 'music'
 
 def check_file():
@@ -12,7 +14,7 @@ def check_file():
         with open(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'mute.json' , 'w', encoding='utf-8') as data_json:
             json.dump(empty_list, data_json, ensure_ascii = False)
             
-    print('sing file checked')
+    logger.info('sing file checked')
 
 def get_file_CQ_dir(name : str) -> str :
     global SONGS_PATH

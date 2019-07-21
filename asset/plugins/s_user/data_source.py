@@ -3,6 +3,8 @@ import os
 import asyncio
 from functions import special_user
 
+from nonebot import logger
+
 def check_file():
     check_keys = special_user.get_special_user_keys()
     if not os.path.exists(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'special_user.json'):
@@ -26,13 +28,13 @@ def check_file():
         result = loop.run_until_complete(special_user.write_special_user_data(check_dict))
         # loop.close()
         if not result:
-            print('special user添加key发生错误！')
+            logger.warn('special user添加key发生错误！')
 
     if not os.path.exists(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'black_list.json'):
         empty_list = []
         with open(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'black_list.json' , 'w', encoding='utf-8') as data_json:
             json.dump(empty_list, data_json, ensure_ascii = False)
-    print('s_user file checked')
+    logger.info('s_user file checked')
 
 # async def write_special_user_data(in_list: list) -> bool:
 #     with open(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'special_user.json' , 'w', encoding='utf-8') as data_json:

@@ -36,7 +36,6 @@ async def sing(session: CommandSession):
         song_name = all_song_list[index]
         song_dir = get_file_CQ_dir(song_name)
         del ctx['message']
-        print(song_dir)
         await bot.send_msg(**ctx, message = song_name[0: song_name.rfind('.')])
         await bot.send_msg(**ctx, message = [{'type': 'record', 'data': {'file': song_dir}}])
     else:
@@ -60,7 +59,6 @@ async def sing(session: CommandSession):
             song_name = song_list[0]
             song_dir = get_file_CQ_dir(song_name)
             del ctx['message']
-            print(song_dir)
             await bot.send_msg(**ctx, message = song_name[0: song_name.rfind('.')])
             await bot.send_msg(**ctx, message = [{'type': 'record', 'data': {'file': song_dir}}])
         else:

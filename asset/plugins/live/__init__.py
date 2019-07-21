@@ -2,6 +2,7 @@
 from nonebot import on_command, CommandSession, permission as perm
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot import Message, MessageSegment
+from nonebot import logger
 import requests
 import asyncio
 import time
@@ -81,7 +82,7 @@ async def query_timer():
     if(json_data_B):
         if int(json_data_B['liveStatus']) == 1:
             is_started_B_live = True
-        print('B no live')
+        logger.info('B no live')
     else:
         suser = global_var.get_super_users()
         for su in suser:
@@ -90,12 +91,12 @@ async def query_timer():
     if json_data_YTB:
         is_started_YB_live = True
     else:
-        print('YTB no live')
+        logger.info('YTB no live')
 
     if json_data_TC:
         is_started_TC_live = True
     else:
-        print('TC no live')
+        logger.info('TC no live')
 
     if (is_started_B_live or is_started_YB_live or is_started_TC_live) and not local_data_dict['live_state']:
         LIVE_STARTED = True
@@ -159,11 +160,9 @@ async def alert_qq():
                 ALERT_DATA[int(key)] = {'count': 0, 'stop': False}
         
         alert_msg_list = ['直播啦！', '快醒醒！', '起床啦！', '动一下！debu！', '快出来看直播！']
-        # print('正在执行提醒: ' + ALERT_DATA)
 
         del_list = []
         for key in ALERT_DATA:
-            # print(ALERT_DATA)
             qq = key
             count = ALERT_DATA[qq]['count']
             stop = ALERT_DATA[qq]['stop']

@@ -2,6 +2,7 @@
 from nonebot import on_command, CommandSession, permission as perm
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot import Message, MessageSegment
+from nonebot import logger
 import nonebot
 
 from .data_source import *
@@ -23,7 +24,6 @@ async def lastest_tweet(session: NLPSession):
     i = 0
     for key in tw_data:
         msg = Message(tw_data[key]['text'])
-        # print(tw_data[key])
         if 'image' in tw_data[key]:
             tw_pic_list = tw_data[key]['image']
             for pic_item in tw_pic_list:
@@ -38,11 +38,11 @@ async def query_timer():
     bot = nonebot.get_bot()
     tw_data = await pull_twitter_data()
     if not tw_data:
-        print('No Twitter Data Online!')
+        logger.warn('No Twitter Data Online!')
         return False
     tw_local_data = await get_twitter_data()
     # new_twitter_keys = []
-    print('check twitter')
+    logger.info('check twitter')
     for key_latest in tw_data:
         time_latest = int(key_latest)
         time_local = 0
@@ -51,7 +51,7 @@ async def query_timer():
             if temp_time_local > time_local:
                 time_local = temp_time_local
         if time_latest > time_local:
-            print('send new twitter: ' + str(time_latest))
+            logger.info('send new twitter: ' + str(time_latest))
             msg = Message(tw_data[key_latest]['text'])
             try:
                 if 'image' in tw_data[key_latest]:
