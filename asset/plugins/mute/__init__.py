@@ -258,6 +258,7 @@ async def daily_update(year, month, day, hour, weeknum):
         return
     else:
         if date_list[3] == 0:
+            await reset_remove_percentage()
             global bot
             for key in cur_ma_data:
                 if tools.is_int(key):
@@ -272,8 +273,7 @@ async def daily_update(year, month, day, hour, weeknum):
                     )
                     await bot.send_group_msg(group_id = int(key), message = day_msg)
                     cur_ma_data[key]['sum_this_day'] = 0
-                    del cur_ma_data[key]['max_cur_day']
-            await reset_remove_percentage()
+                    cur_ma_data[key]['max_cur_day'] = 0
             if date_list[4] == 1:
                 for key in cur_ma_data:
                     if tools.is_int(key):
@@ -286,7 +286,7 @@ async def daily_update(year, month, day, hour, weeknum):
                         )
                         await bot.send_group_msg(group_id = int(key), message = week_msg)
                         cur_ma_data[key]['sum_this_week'] = 0
-                        del cur_ma_data[key]['max_cur_week']
+                        cur_ma_data[key]['max_cur_week'] = 0
             if date_list[2] == 1:
                 for key in cur_ma_data:
                     if tools.is_int(key):
@@ -300,7 +300,7 @@ async def daily_update(year, month, day, hour, weeknum):
                         )
                         await bot.send_group_msg(group_id = int(key), message = month_msg)
                         cur_ma_data[key]['sum_this_month'] = 0
-                        del cur_ma_data[key]['max_cur_month']
+                        cur_ma_data[key]['max_cur_month'] = 0
             cur_ma_data['update_time'] = date_list
             await write_mute_analyze_data(cur_ma_data)
 
