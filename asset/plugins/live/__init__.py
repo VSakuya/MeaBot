@@ -64,7 +64,7 @@ async def live_simulate(session: CommandSession):
     LIVE_STARTED = True
 
 
-@nonebot.scheduler.scheduled_job('interval', seconds=60)
+@nonebot.scheduler.scheduled_job('interval', seconds=60, id = 'check_live', jitter = 10)
 async def query_timer():
     bot = nonebot.get_bot()
     local_data_dict = await get_live_data()
@@ -144,7 +144,7 @@ async def query_timer():
     # await bot.send_group_msg(group_id=204421130, message=MessageSegment.share(url=json_data['url'], title=json_data['title'], content='mea开播啦', image_url=json_data['cover']))
     # await bot.send_group_msg(group_id=204421130, message='test')
 
-@nonebot.scheduler.scheduled_job('interval', seconds=7)
+@nonebot.scheduler.scheduled_job('interval', id = 'alert_qq', seconds=11)
 async def alert_qq():
     global LIVE_STARTED
 
