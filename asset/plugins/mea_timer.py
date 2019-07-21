@@ -23,5 +23,5 @@ async def main_timer():
         asyncio.ensure_future(twitter.check_twitter())
     asyncio.ensure_future(live.alert_qq())
     if now.hour == 0 and now.minute <= 10 and now.second == 0:
-        asyncio.ensure_future(mute.daily_update(now.year, now.month, now.day, now.hour, datetime.isoweekday(now)))
+        await mute.daily_update(now.year, now.month, now.day, now.hour, datetime.isoweekday(now))
 
