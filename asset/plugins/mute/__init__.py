@@ -274,7 +274,7 @@ async def daily_update(year, month, day, hour, weeknum):
                         )
                         await bot.send_group_msg(group_id = int(key), message = day_msg)
                         cur_ma_data[key]['sum_this_day'] = 0
-                        cur_ma_data[key]['max_cur_day'] = 0
+                        cur_ma_data[key]['max_cur_day'] = {}
             except:
                 traceback.print_exc()
                 logger.error('每日信息发送失败')
@@ -292,7 +292,7 @@ async def daily_update(year, month, day, hour, weeknum):
                             )
                             await bot.send_group_msg(group_id = int(key), message = week_msg)
                             cur_ma_data[key]['sum_this_week'] = 0
-                            cur_ma_data[key]['max_cur_week'] = 0
+                            cur_ma_data[key]['max_cur_week'] = {}
                 except:
                     traceback.print_exc()
                     logger.error('每周信息发送失败')
@@ -310,7 +310,7 @@ async def daily_update(year, month, day, hour, weeknum):
                             )
                             await bot.send_group_msg(group_id = int(key), message = month_msg)
                             cur_ma_data[key]['sum_this_month'] = 0
-                            cur_ma_data[key]['max_cur_month'] = 0
+                            cur_ma_data[key]['max_cur_month'] = {}
                 except:
                     traceback.print_exc()
                     logger.error('每月信息发送失败')
