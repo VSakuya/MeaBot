@@ -314,8 +314,8 @@ async def daily_update(year, month, day, hour, weeknum):
                 except:
                     traceback.print_exc()
                     logger.error('每月信息发送失败')
-            cur_ma_data['update_time'] = date_list
-            await write_mute_analyze_data(cur_ma_data)
+        cur_ma_data['update_time'] = date_list
+        await write_mute_analyze_data(cur_ma_data)
 
 @on_command('mute_analyze', aliases = ('口球统计', '统计口球'), permission=perm.GROUP_MEMBER)
 @check_black_list()
