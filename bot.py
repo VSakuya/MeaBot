@@ -22,7 +22,10 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     log_filename = str(math.floor(time.time())) + '.log'
     log_dir = path.join(path.dirname(__file__), 'log', log_filename)
-    logging.basicConfig(filename = log_dir)
+    logging.basicConfig(
+        filename = log_dir, 
+        format = '%(asctime)s-%(name)s-%(funcName)s-%(levelname)s-%(message)s'
+    )
     nonebot.load_plugins(
         path.join(path.dirname(__file__), 'asset', 'plugins'),
         'asset.plugins'
