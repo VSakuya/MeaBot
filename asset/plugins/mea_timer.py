@@ -24,7 +24,7 @@ async def main_timer():
         asyncio.ensure_future(live.check_live())
         asyncio.ensure_future(twitter.check_twitter())
     asyncio.ensure_future(live.alert_qq())
-    if now.hour == 0 and now.minute <= 10 and now.second == 0:
+    if now.hour == 0 and now.minute <= 30 and now.second == 0:
         asyncio.ensure_future(daily_del_file())
         await mute.daily_update(now.year, now.month, now.day, now.hour, datetime.isoweekday(now))
 

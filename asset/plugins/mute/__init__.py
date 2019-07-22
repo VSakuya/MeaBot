@@ -411,7 +411,6 @@ async def nl_mute_draw(session: NLPSession):
 @on_command('get_remove_mute_percentage', aliases = ('当前豁免几率', '当前赦免概率'), permission=perm.GROUP_MEMBER)
 @check_black_list()
 async def get_remove_mute_percentage(session: CommandSession):
-    global CUR_REMOVE_MUTE_PERCENTAGE
     ctx = session.ctx.copy()
     cur_per = await get_remove_percentage(group_id = ctx['group_id'])
     await session.send('当前被饶恕的几率是' + str(cur_per/10) + '%哦')
