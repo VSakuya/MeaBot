@@ -37,6 +37,8 @@ async def arrange_reply(session: CommandSession):
         g_data = r_data[g_key]
         new_data[g_key] = {}
         for w_key in g_data:
+            if isinstance(w_key, list):
+                return
             single_data = g_data[w_key]
             t_list = []
             t_list.append(single_data['message'])
