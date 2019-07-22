@@ -278,7 +278,7 @@ async def daily_update(year, month, day, hour, weeknum):
             except:
                 traceback.print_exc()
                 logger.error('每日信息发送失败')
-            await reset_remove_percentage()
+            
             if date_list[4] == 1:
                 try:
                     for key in cur_ma_data:
@@ -314,6 +314,7 @@ async def daily_update(year, month, day, hour, weeknum):
                 except:
                     traceback.print_exc()
                     logger.error('每月信息发送失败')
+        await reset_remove_percentage()
         cur_ma_data['update_time'] = date_list
         await write_mute_analyze_data(cur_ma_data)
 
