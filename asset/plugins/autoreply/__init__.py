@@ -271,13 +271,17 @@ async def start_check(session: CommandSession):
                     traceback.print_exc()
                     logger.warn('获取个人信息错误')
                 nickname = ''
-                if 'card' in group_m_info:
-                    if group_m_info['card'] != '':
-                        nickname = group_m_info['card']
+                try:
+                    if 'card' in group_m_info:
+                        if group_m_info['card'] != '':
+                            nickname = group_m_info['card']
+                        else:
+                            nickname = group_m_info['nickname'] 
                     else:
-                        nickname = group_m_info['nickname'] 
-                else:
-                    nickname = group_m_info['nickname']
+                        nickname = group_m_info['nickname']
+                except Exception as e:
+                    traceback.print_exc()
+                    logger.warn('获取个人信息错误')
                 key_str = '用户：%s(%s)申请群：%s(%s)的自动回复，关键字：“%s”，回复有以下%s个：'%(
                     nickname,
                     str(submit_user_id),
