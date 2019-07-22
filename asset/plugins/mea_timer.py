@@ -1,8 +1,10 @@
+import os
 import asyncio
 import nonebot
 import pytz
 import random
 import asyncio
+import config
 from nonebot import logger
 from datetime import datetime
 
@@ -23,5 +25,18 @@ async def main_timer():
         asyncio.ensure_future(twitter.check_twitter())
     asyncio.ensure_future(live.alert_qq())
     if now.hour == 0 and now.minute <= 10 and now.second == 0:
+        asyncio.ensure_future(daily_del_file())
         await mute.daily_update(now.year, now.month, now.day, now.hour, datetime.isoweekday(now))
 
+async def daily_del_file():
+    dirs_list = [
+        os.path.join(config.global_var.get_coolq_dir(), 'data', 'record'),
+        os.path.join(config.global_var.get_coolq_dir(), 'data', 'image')
+    ]
+
+    for single_dir in dirs_list:
+        file_list = os.listdir(single_dir)
+        for item in file_list:
+            file_dir = os.path.join(single_dir, item)
+            if not os.path.isdir(file_dir):
+                os.remove(file_dir)

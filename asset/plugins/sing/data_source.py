@@ -6,7 +6,8 @@ from config import global_var
 
 from nonebot import logger
 
-SONGS_PATH = global_var.get_coolq_dir() + os.sep + 'data' + os.sep + 'record' + os.sep + 'music'
+# SONGS_PATH = global_var.get_coolq_dir() + os.sep + 'data' + os.sep + 'record' + os.sep + 'music'
+SONGS_PATH = os.path.join(global_var.get_coolq_dir(), 'data', 'record', 'music')
 
 def check_file():
     if not os.path.exists(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'sing.json'):

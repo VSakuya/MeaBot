@@ -1,6 +1,7 @@
 import asyncio
 import time
 import traceback
+import random
 
 from nonebot import on_command, CommandSession
 from nonebot import on_natural_language, NLPSession, IntentCommand, permission as perm
@@ -27,7 +28,28 @@ __plugin_usage__ = r"""任何人都能轻松提交的自动回复
 IS_CHECKING = False
 CURRENT_CHECKING_USER = 0
 
+@on_command('arrange_reply', aliases = ('自回整理', '整理自回'), permission=perm.SUPERUSER)
+@check_black_list()
+async def arrange_reply(session: CommandSession):
+    r_data = await get_reply_data()
+    new_data = {}
+    for g_key in r_data:
+        g_data = r_data[g_key]
+        new_data[g_key] = {}
+        for w_key in g_data:
+            single_data = g_data[w_key]
+            t_list = []
+            t_list.append(single_data['message'])
+            if '|' in w_key:
+                key_list = w_key.split('|')
+                for key in key_list:
+                    new_data[g_key][key] = single_data
+                    new_data[g_key][key]['message'] = t_list
+            else:
+                new_data[g_key][w_key] = single_data
+                new_data[g_key][w_key]['message'] = t_list
 
+    await write_reply_data(new_data)
 
 @on_command('add_autoreply', aliases = ('添加自动回复', '自动回复添加'), permission=perm.GROUP_MEMBER)
 @check_black_list()
@@ -163,7 +185,9 @@ async def aa_parser(session: CommandSession):
 @on_command('list_ar', aliases = ('自动回复列表', '列表自动回复'), permission=perm.GROUP_MEMBER)
 @check_black_list()
 async def list_ar(session: CommandSession):
-    key_list = await get_key_list()
+    ctx = session.ctx.copy()
+    group_id = ctx['group_id']
+    key_list = await get_key_list(group_id)
     sound_list = await get_sound_data()
     data_str = '目前图文自动回复有：\n'
     for i in range(len(key_list)):
@@ -237,7 +261,12 @@ async def start_check(session: CommandSession):
                 for group in all_group_list:
                     if group_id == group['group_id']:
                         group_name = group['group_name']
-                group_m_info = await bot.get_group_member_info(group_id = group_id, user_id = submit_user_id)
+                group_m_info = {}
+                try:
+                    group_m_info = await bot.get_group_member_info(group_id = group_id, user_id = submit_user_id)
+                except Exception as e:
+                    traceback.print_exc()
+                    logger.warn('获取个人信息错误')
                 nickname = ''
                 if 'card' in group_m_info:
                     if group_m_info['card'] != '':
@@ -246,30 +275,32 @@ async def start_check(session: CommandSession):
                         nickname = group_m_info['nickname'] 
                 else:
                     nickname = group_m_info['nickname']
-                key_str = '用户：%s(%s)申请群：%s(%s)的自动回复，关键字：“%s”，回复：'%(
+                key_str = '用户：%s(%s)申请群：%s(%s)的自动回复，关键字：“%s”，回复有以下%s个：'%(
                     nickname,
                     str(submit_user_id),
                     group_name,
                     str(group_id),
-                    key_word 
+                    key_word,
+                    str(len(message))
                 )
                 await bot.send_private_msg(user_id = ctx['user_id'], message = key_str)
-                ctx['message'] = message
                 is_success = True
-                try:
-                    await bot.send_msg(**ctx)
-                except:
-                    is_success = False
-                    ctx['message'] = '内容有错误！！！'
-                    await bot.send_msg(**ctx)
+                for msg_index in range(len(message)):
+                    ctx['message'] = message[msg_index]
+                    try:
+                        await bot.send_msg(**ctx)
+                    except:
+                        is_success = False
+                        ctx['message'] = '内容有错误！！！'
+                        await bot.send_msg(**ctx)
                 if not is_success:
-                    await del_reply_t_data(key)
+                    await del_reply_t_data(key, True)
                     continue
             status = session.get('status' + str(key), prompt='是否同意？（是/否/拉黑）')
             if status == 0:
                 reason = session.get('reason' + str(key), prompt='为啥啊？给点理由呗')
                 session.current_key = None
-                result = await del_reply_t_data(key)
+                result = await del_reply_t_data(key, True)
                 if result:
                     await bot.send_private_msg(user_id = user_id, message = '已成功拒绝')
                     if group_id:
@@ -295,7 +326,7 @@ async def start_check(session: CommandSession):
                 reason = session.get('reason', prompt='为啥啊？给点理由呗')
                 session.current_key = None
                 bl_result= await black_list.add_black_list_data(submit_user_id)
-                result = await del_reply_t_data(key)
+                result = await del_reply_t_data(key, True)
                 if result and bl_result:
                     await bot.send_private_msg(user_id = user_id, message = '已成功添加黑名单！并且因为违规被永久添加黑名单！！！')
                     
@@ -381,6 +412,30 @@ async def abi_parser(session: CommandSession):
         else:
             session.pause('哈？这个看着像ID吗？')
 
+@on_command('del_ar_by_GA', aliases = ('删除自回', '删除自动回复'), permission=perm.GROUP_ADMIN)
+async def del_ar_by_GA(session: CommandSession):
+    ctx = session.ctx.copy()
+    key_word = session.get('key_word', prompt = '需要删除的自动回复关键字是啥啊？')
+    key_list = await get_key_list(ctx['group_id'])
+    result = await del_reply_data(group_id = ctx['group_id'], key = key_word, is_del_file=True)
+    if key_word:
+        if not key_word in key_list:
+            session.finish('看清楚有没有这个关键字再删除啊喂！你这个文盲大猩猩！')
+    if result:
+        session.finish('搞定了，滚吧')
+    else:
+        session.finish('发生错误！！')
+
+@del_ar_by_GA.args_parser
+async def dabg_parser(session: CommandSession):
+    stripped_arg = session.current_arg_text.strip()
+    
+    if session.is_first_run:
+        if stripped_arg:
+            session.state['key_word'] = stripped_arg
+    if session.current_key == 'key_word':
+        session.state['key_word'] = stripped_arg
+
 @on_command('update_sound', aliases = ('更新回复音效', '更新回音'), permission=perm.SUPERUSER)
 async def update_sound(session: CommandSession):
     result = await update_sounds()
@@ -408,25 +463,19 @@ async def reply_to_nl(session: NLPSession):
     if 'group_id' in ctx:
         group_id = ctx['group_id']   
     
-    found_it = False
-    is_sound = False
     match_key = {}
     if group_id:
         if str(group_id) in data_dict:
             for key in data_dict[str(group_id)]:
-                keys = key.split('|')
-                for single_key in keys:
-                    if in_str.find(single_key) >= 0:
-                        found_it = True
-                        match_key[single_key] = {'source' : group_id, 'key': key}
+                if in_str.find(key) >= 0:
+                    match_key['text'] = {}
+                    match_key['text'][key] = {'source' : group_id, 'key': key}
 
-    if 'all' in data_dict:
-        for key in data_dict['all']:
-            keys = key.split('|')
-            for single_key in keys:
-                if in_str.find(single_key) >= 0:
-                    found_it = True
-                    match_key[single_key] = {'source' : 'all', 'key': key}
+    if '0' in data_dict:
+        for key in data_dict['0']:
+            if in_str.find(key) >= 0:
+                match_key['text'] = {}
+                match_key['text'][key] = {'source' : '0', 'key': key}
     
     if sound_list:
         for key in sound_list:
@@ -434,60 +483,49 @@ async def reply_to_nl(session: NLPSession):
             keys = key_pure.split('_')
             for single_key in keys:
                 if in_str.find(single_key) >= 0:
-                    found_it = True
-                    is_sound = True
-                    match_key[single_key] = key
-    
-    if found_it:
-        if is_sound:
-            sound_name = ''
-            temp_key = ''
-            i = 0
-            for key in match_key:
-                if i == 0:
-                    temp_key = key
-                    sound_name = match_key[key]
-                else:
-                    if len(key) > len(temp_key):
-                        temp_key = key
-                        sound_name = match_key[key]
-                i += 1
-    
-            if 'source' in match_key[temp_key]:
-                source = str(match_key[str(temp_key)]['source'])
-                final_key = str(match_key[str(temp_key)]['key'])
-                send_msg = data_dict[source][final_key]['message']
-                ctx['message'] = send_msg
-                await bot.send_msg(**ctx)
-                return
+                    match_key['sound'] = {}
+                    match_key['sound'][single_key] = key
 
-            if group_id:
-                await bot.send_group_msg(group_id = group_id, message=MessageSegment.record(os.sep + 'sound' + os.sep + sound_name))
+    if 'text' in match_key:
+        final_key = ''
+        temp_key = ''
+        i = 0
+        for key in match_key['text']:
+            if i == 0:
+                temp_key = key
+                final_key = match_key['text'][key]['key']
             else:
-                await bot.send_private_msg(user_id = ctx['user_id'], message=MessageSegment.record(os.sep + 'sound' + os.sep + sound_name))
-        else:
-            final_key = ''
-            temp_key = ''
-            i = 0
-            for key in match_key:
-                if i == 0:
+                if len(key) > len(temp_key):
                     temp_key = key
-                    final_key = match_key[key]['key']
-                else:
-                    if len(key) > len(temp_key):
-                        temp_key = key
-                        final_key = match_key[key]['key']
-                i += 1
-            source = str(match_key[str(temp_key)]['source'])
-            send_msg = data_dict[source][final_key]['message']
-            ctx['message'] = send_msg
-            await bot.send_msg(**ctx)
-            return
-            
+                    final_key = match_key['text'][key]['key']
+            i += 1
+        source = str(match_key['text'][str(temp_key)]['source'])
+        send_msg_list = data_dict[source][final_key]['message']
+        rand_index = random.randint(0, len(send_msg_list) - 1)
+        ctx['message'] = send_msg_list[rand_index]
+        await bot.send_msg(**ctx)
 
+    if 'sound' in match_key:
+        sound_name = ''
+        temp_key = ''
+        i = 0
+        for key in match_key['sound']:
+            if i == 0:
+                temp_key = key
+                sound_name = match_key['sound'][key]
+            else:
+                if len(key) > len(temp_key):
+                    temp_key = key
+                    sound_name = match_key['sound'][key]
+            i += 1
+
+
+        if group_id:
+            await bot.send_group_msg(group_id = group_id, message=MessageSegment.record(os.sep + 'sound' + os.sep + sound_name))
+        else:
+            await bot.send_private_msg(user_id = ctx['user_id'], message=MessageSegment.record(os.sep + 'sound' + os.sep + sound_name))
 
 check_file()
-
 
 example ={
     'group_id_1':{
@@ -501,7 +539,7 @@ example ={
     'group_id_2':{
         '222':{}
     },
-    'all':{
+    '0':{
         '2323':{}
     }
     }
