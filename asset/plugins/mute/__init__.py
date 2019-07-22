@@ -398,7 +398,8 @@ async def nl_mute_draw(session: NLPSession):
     elif max_result == 31:
         message = message + '\n并且持平了本月最佳！'
     await bot.send_msg(group_id=ctx['group_id'], message=message)
-    rand_num = random.randint(0, 999)
+    # rand_num = random.randint(0, 999)
+    rand_num = random.randint(0, 9999999)
     cur_per = await get_remove_percentage(ctx['group_id'])
     if rand_num <= cur_per:
         msg = 'mea捏，突然觉得心情好，所以还是给%s你解除了吧（按进去让你吞下）'%nickname
@@ -406,7 +407,7 @@ async def nl_mute_draw(session: NLPSession):
         await bot.set_group_ban(group_id=ctx['group_id'], user_id=ctx['user_id'], duration=0)
         msg = '%s你开心吧？记得下次直播的时候打钱哦~~'%nickname
         await bot.send_msg(group_id=ctx['group_id'], message=msg)
-    await update_remove_percentage(group_id = ctx['group_id'], new_value = cur_per + 1)
+    await update_remove_percentage(group_id = ctx['group_id'], new_value = cur_per + math.floor(mute_time / 60) * 65)
 
 
 @on_command('get_remove_mute_percentage', aliases = ('当前豁免几率', '当前赦免概率'), permission=perm.GROUP_MEMBER)
@@ -414,7 +415,7 @@ async def nl_mute_draw(session: NLPSession):
 async def get_remove_mute_percentage(session: CommandSession):
     ctx = session.ctx.copy()
     cur_per = await get_remove_percentage(group_id = ctx['group_id'])
-    await session.send('当前被饶恕的几率是' + str(cur_per/10) + '%哦')
+    await session.send('当前被饶恕的几率是' + str(cur_per/100000) + '%哦')
 
 @on_command('update_remove_percentage_c', aliases = ('更新豁免几率', '更新赦免概率'), permission=perm.SUPERUSER)
 @check_black_list()
@@ -434,11 +435,11 @@ async def urpc_parser(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
     if session.is_first_run:
         if stripped_arg and tools.is_int(stripped_arg):
-            session.state['new_value'] = int(stripped_arg)
+            session.state['new_value'] = math.floor(int(stripped_arg) * 100000)
             return
     else:
         if tools.is_int(stripped_arg):
-            session.state['new_value'] = int(stripped_arg)
+            session.state['new_value'] = math.floor(int(stripped_arg) * 100000)
             return
         session.finish('参数有错！')
 

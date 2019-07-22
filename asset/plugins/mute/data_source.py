@@ -4,7 +4,7 @@ from functions import tools
 
 from nonebot import logger
 
-DEF_REMOVE_MUTE_PERCENTAGE = 10
+DEF_REMOVE_MUTE_PERCENTAGE = 100000
 
 def check_file():
     if not os.path.exists(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'mute.json'):
