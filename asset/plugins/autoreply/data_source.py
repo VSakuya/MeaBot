@@ -149,33 +149,31 @@ async def write_reply_data(in_dict: dict) -> bool:
     return False
 
 async def add_reply_data(group_id, key : str, message : list, submit_user_id : int, checked_user_id : int):
-    data_dict = None
-    with open(os.getcwd() + os.sep + 'asset' + os.sep + 'data' + os.sep +'autoreply.json' , 'r', encoding='utf-8') as data_json:
-        data_dict = json.load(data_json)
-        key_list = key.split('|')
-        for single_key in key_list:
-            if not group_id:
-                if not '0' in data_dict:
-                    data_dict['0'] = {}
-                item = data_dict['0']
-                new_content = {
-                'message': message,
-                'sumbit_user_id' : submit_user_id,
-                'checked_user_id' : checked_user_id
-                }
-                item[str(single_key)] = new_content
-                data_dict['0'] = item
-            else:
-                if not str(group_id) in data_dict:
-                    data_dict[str(group_id)] = {}
-                item = data_dict[str(group_id)]
-                new_content = {
-                'message': message,
-                'sumbit_user_id' : submit_user_id,
-                'checked_user_id' : checked_user_id
-                }
-                item[str(single_key)] = new_content
-                data_dict[str(group_id)] = item
+    data_dict = await get_reply_data()
+    key_list = key.split('|')
+    for single_key in key_list:
+        if not group_id:
+            if not '0' in data_dict:
+                data_dict['0'] = {}
+            item = data_dict['0']
+            new_content = {
+            'message': message,
+            'sumbit_user_id' : submit_user_id,
+            'checked_user_id' : checked_user_id
+            }
+            item[str(single_key)] = new_content
+            data_dict['0'] = item.copy()
+        else:
+            if not str(group_id) in data_dict:
+                data_dict[str(group_id)] = {}
+            item = data_dict[str(group_id)]
+            new_content = {
+            'message': message,
+            'sumbit_user_id' : submit_user_id,
+            'checked_user_id' : checked_user_id
+            }
+            item[str(single_key)] = new_content
+            data_dict[str(group_id)] = item.copy()
 
     if not data_dict:
         return False
