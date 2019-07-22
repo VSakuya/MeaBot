@@ -15,7 +15,8 @@ class global_var:
     NECESSARY_DIR_LIST = [
         os.path.join(COOLQ_DIR, 'data', 'record', 'music'),
         os.path.join(COOLQ_DIR, 'data', 'record', 'sound'),
-        os.path.join(COOLQ_DIR, 'data', 'image', 'reply')
+        os.path.join(COOLQ_DIR, 'data', 'image', 'reply'),
+        os.path.join(os.path.dirname(__file__), 'log')
     ]
     
     @staticmethod

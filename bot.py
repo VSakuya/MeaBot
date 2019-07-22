@@ -3,7 +3,9 @@ import os
 import nonebot
 import config
 import logging
-from nonebot import logger
+import math
+import time
+from nonebot.log import logger
 
 def check_file():
     n_dirs = config.global_var.get_necessary_dir()
@@ -18,6 +20,9 @@ if __name__ == '__main__':
     check_file()
     nonebot.init(config)
     logger.setLevel(logging.DEBUG)
+    log_filename = str(math.floor(time.time())) + '.log'
+    log_dir = path.join(path.dirname(__file__), 'log', log_filename)
+    logging.basicConfig(filename = log_dir)
     nonebot.load_plugins(
         path.join(path.dirname(__file__), 'asset', 'plugins'),
         'asset.plugins'
