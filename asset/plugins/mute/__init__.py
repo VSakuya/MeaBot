@@ -414,7 +414,7 @@ async def nl_mute_draw(session: NLPSession):
         else:
             await update_remove_percentage(group_id = ctx['group_id'], new_value = cur_per + math.floor(mute_time / 60) * 65)
     else:
-        session.send('管理员也来凑热闹？不行哦~')
+        await session.send('管理员也来凑热闹？不行哦~')
 
 
 @on_command('get_remove_mute_percentage', aliases = ('当前豁免几率', '当前赦免概率'), permission=perm.GROUP_MEMBER)
