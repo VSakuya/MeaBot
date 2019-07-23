@@ -258,63 +258,66 @@ async def daily_update(year, month, day, hour, weeknum):
     if date_list == cur_ma_data['update_time']:
         return
     else:
-        if date_list[3] == 0:
-            global bot
+        global bot
+        try:
+            for key in cur_ma_data:
+                if tools.is_int(key):
+                    if not 'max_cur_day' in cur_ma_data[key]:
+                        continue
+                    cur_per = await get_remove_percentage(int(key))
+                    day_msg = '本日共发出口球%s，\n本日最佳是%s：%s\n本日最终赦免概率是%s'%(
+                        tools.sec_to_str(cur_ma_data[key]['sum_this_day']),
+                        '和'.join(cur_ma_data[key]['max_cur_day']['nickname']),
+                        tools.sec_to_str(cur_ma_data[key]['max_cur_day']['sec']),
+                        str(cur_per / 100000)
+                    )
+                    await bot.send_group_msg(group_id = int(key), message = day_msg)
+                    cur_ma_data[key]['sum_this_day'] = 0
+                    cur_ma_data[key]['max_cur_day'] = {}
+        except:
+            traceback.print_exc()
+            logger.error('每日信息发送失败')
+        
+        if date_list[4] == 1:
             try:
                 for key in cur_ma_data:
                     if tools.is_int(key):
-                        if not 'max_cur_day' in cur_ma_data[key]:
+                        if not 'max_cur_week' in cur_ma_data[key]:
                             continue
-                        cur_per = await get_remove_percentage(int(key))
-                        day_msg = '本日共发出口球%s，\n本日最佳是%s：%s\n本日最终赦免概率是%s'%(
-                            tools.sec_to_str(cur_ma_data[key]['sum_this_day']),
-                            '和'.join(cur_ma_data[key]['max_cur_day']['nickname']),
-                            tools.sec_to_str(cur_ma_data[key]['max_cur_day']['sec']),
-                            str(cur_per / 10)
+                        week_msg = '本周共发出口球%s，本周最佳是%s：%s'%(
+                            tools.sec_to_str(cur_ma_data[key]['sum_this_week']),
+                            '和'.join(cur_ma_data[key]['max_cur_week']['nickname']),
+                            tools.sec_to_str(cur_ma_data[key]['max_cur_week']['sec'])
                         )
-                        await bot.send_group_msg(group_id = int(key), message = day_msg)
-                        cur_ma_data[key]['sum_this_day'] = 0
-                        cur_ma_data[key]['max_cur_day'] = {}
+                        await bot.send_group_msg(group_id = int(key), message = week_msg)
+                        cur_ma_data[key]['sum_this_week'] = 0
+                        cur_ma_data[key]['max_cur_week'] = {}
             except:
                 traceback.print_exc()
-                logger.error('每日信息发送失败')
-            
-            if date_list[4] == 1:
-                try:
-                    for key in cur_ma_data:
-                        if tools.is_int(key):
-                            if not 'max_cur_week' in cur_ma_data[key]:
-                                continue
-                            week_msg = '本周共发出口球%s，本周最佳是%s：%s'%(
-                                tools.sec_to_str(cur_ma_data[key]['sum_this_week']),
-                                '和'.join(cur_ma_data[key]['max_cur_week']['nickname']),
-                                tools.sec_to_str(cur_ma_data[key]['max_cur_week']['sec'])
-                            )
-                            await bot.send_group_msg(group_id = int(key), message = week_msg)
-                            cur_ma_data[key]['sum_this_week'] = 0
-                            cur_ma_data[key]['max_cur_week'] = {}
-                except:
-                    traceback.print_exc()
-                    logger.error('每周信息发送失败')
-            if date_list[2] == 1:
-                try:
-                    for key in cur_ma_data:
-                        if tools.is_int(key):
-                            if not 'max_cur_month' in cur_ma_data[key]:
-                                continue
-                            month_msg = '本月共发出口球%s，本月最佳是%s：%s'%(
-                                tools.sec_to_str(cur_ma_data[key]['sum_this_month']),
-                                '和'.join(cur_ma_data[key]['max_cur_month']['nickname'])
-                                ,
-                                tools.sec_to_str(cur_ma_data[key]['max_cur_month']['sec'])
-                            )
-                            await bot.send_group_msg(group_id = int(key), message = month_msg)
-                            cur_ma_data[key]['sum_this_month'] = 0
-                            cur_ma_data[key]['max_cur_month'] = {}
-                except:
-                    traceback.print_exc()
-                    logger.error('每月信息发送失败')
-        await reset_remove_percentage()
+                logger.error('每周信息发送失败')
+        if date_list[2] == 1:
+            try:
+                for key in cur_ma_data:
+                    if tools.is_int(key):
+                        if not 'max_cur_month' in cur_ma_data[key]:
+                            continue
+                        month_msg = '本月共发出口球%s，本月最佳是%s：%s'%(
+                            tools.sec_to_str(cur_ma_data[key]['sum_this_month']),
+                            '和'.join(cur_ma_data[key]['max_cur_month']['nickname'])
+                            ,
+                            tools.sec_to_str(cur_ma_data[key]['max_cur_month']['sec'])
+                        )
+                        await bot.send_group_msg(group_id = int(key), message = month_msg)
+                        cur_ma_data[key]['sum_this_month'] = 0
+                        cur_ma_data[key]['max_cur_month'] = {}
+            except:
+                traceback.print_exc()
+                logger.error('每月信息发送失败')
+        global DEF_REMOVE_MUTE_PERCENTAGE
+        if not 'cur_remove_percentage' in cur_ma_data:
+            return True
+        for key in cur_ma_data['cur_remove_percentage']:
+            cur_ma_data['cur_remove_percentage'][key] = DEF_REMOVE_MUTE_PERCENTAGE
         cur_ma_data['update_time'] = date_list
         await write_mute_analyze_data(cur_ma_data)
 

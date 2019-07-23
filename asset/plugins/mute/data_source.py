@@ -173,15 +173,15 @@ async def get_remove_percentage(group_id: int):
         return DEF_REMOVE_MUTE_PERCENTAGE
     return cur_ma_data['cur_remove_percentage'][str(group_id)]
     
-async def reset_remove_percentage():
-    cur_ma_data = await get_mute_analyze_data()
-    global DEF_REMOVE_MUTE_PERCENTAGE
-    if not 'cur_remove_percentage' in cur_ma_data:
-        return True
-    for key in cur_ma_data['cur_remove_percentage']:
-        cur_ma_data['cur_remove_percentage'][key] = DEF_REMOVE_MUTE_PERCENTAGE
-    result = await write_mute_analyze_data(cur_ma_data)
-    return result
+# async def reset_remove_percentage():
+#     cur_ma_data = await get_mute_analyze_data()
+#     global DEF_REMOVE_MUTE_PERCENTAGE
+#     if not 'cur_remove_percentage' in cur_ma_data:
+#         return True
+#     for key in cur_ma_data['cur_remove_percentage']:
+#         cur_ma_data['cur_remove_percentage'][key] = DEF_REMOVE_MUTE_PERCENTAGE
+#     result = await write_mute_analyze_data(cur_ma_data)
+#     return result
 
 
 async def write_mute_analyze_data(in_dict: dict) -> bool:
