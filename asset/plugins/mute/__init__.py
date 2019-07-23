@@ -382,8 +382,8 @@ async def nl_mute_draw(session: NLPSession):
         nickname = ctx['sender']['nickname']
     await add_mute_analyze_time(mute_time, ctx['group_id'])
     max_result = 0
-    message = '恭喜%s抽取到%s的口球！'%(nickname, mute_str)
     if not (ctx['sender']['role'] == 'owner' or ctx['sender']['role'] == 'admin'):
+        message = '恭喜%s抽取到%s的口球！'%(nickname, mute_str)
         max_result = await compare_mute_time(sec = mute_time, user_id = ctx['user_id'], group_id = ctx['group_id'], nickname = nickname)
         if max_result == 1:
             message = message + '\n并且刷新今日最佳！'
@@ -413,6 +413,8 @@ async def nl_mute_draw(session: NLPSession):
             await update_remove_percentage(group_id = ctx['group_id'], new_value = new_value)
         else:
             await update_remove_percentage(group_id = ctx['group_id'], new_value = cur_per + math.floor(mute_time / 60) * 65)
+    else:
+        session.send('管理员也来凑热闹？不行哦~')
 
 
 @on_command('get_remove_mute_percentage', aliases = ('当前豁免几率', '当前赦免概率'), permission=perm.GROUP_MEMBER)
