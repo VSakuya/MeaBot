@@ -382,32 +382,37 @@ async def nl_mute_draw(session: NLPSession):
         nickname = ctx['sender']['nickname']
     await add_mute_analyze_time(mute_time, ctx['group_id'])
     max_result = 0
+    message = '恭喜%s抽取到%s的口球！'%(nickname, mute_str)
     if not (ctx['sender']['role'] == 'owner' or ctx['sender']['role'] == 'admin'):
         max_result = await compare_mute_time(sec = mute_time, user_id = ctx['user_id'], group_id = ctx['group_id'], nickname = nickname)
-    message = '恭喜%s抽取到%s的口球！'%(nickname, mute_str)
-    if max_result == 1:
-        message = message + '\n并且刷新今日最佳！'
-    elif max_result == 11:
-        message = message + '\n并且持平了今日最佳！'
-    elif max_result == 2:
-        message = message + '\n并且刷新本周最佳！'
-    elif max_result == 21:
-        message = message + '\n并且持平了本周最佳！'
-    elif max_result == 3:
-        message = message + '\n并且刷新本月最佳！'
-    elif max_result == 31:
-        message = message + '\n并且持平了本月最佳！'
-    await bot.send_msg(group_id=ctx['group_id'], message=message)
-    # rand_num = random.randint(0, 999)
-    rand_num = random.randint(0, 9999999)
-    cur_per = await get_remove_percentage(ctx['group_id'])
-    if rand_num <= cur_per:
-        msg = 'mea捏，突然觉得心情好，所以还是给%s你解除了吧（按进去让你吞下）'%nickname
-        await bot.send_msg(group_id=ctx['group_id'], message=msg)
-        await bot.set_group_ban(group_id=ctx['group_id'], user_id=ctx['user_id'], duration=0)
-        msg = '%s你开心吧？记得下次直播的时候打钱哦~~'%nickname
-        await bot.send_msg(group_id=ctx['group_id'], message=msg)
-    await update_remove_percentage(group_id = ctx['group_id'], new_value = cur_per + math.floor(mute_time / 60) * 65)
+        if max_result == 1:
+            message = message + '\n并且刷新今日最佳！'
+        elif max_result == 11:
+            message = message + '\n并且持平了今日最佳！'
+        elif max_result == 2:
+            message = message + '\n并且刷新本周最佳！'
+        elif max_result == 21:
+            message = message + '\n并且持平了本周最佳！'
+        elif max_result == 3:
+            message = message + '\n并且刷新本月最佳！'
+        elif max_result == 31:
+            message = message + '\n并且持平了本月最佳！'
+        await bot.send_msg(group_id=ctx['group_id'], message=message)
+        # rand_num = random.randint(0, 999)
+        rand_num = random.randint(0, 9999999)
+        cur_per = await get_remove_percentage(ctx['group_id'])
+        if rand_num <= cur_per:
+            msg = 'mea捏，突然觉得心情好，所以还是给%s你解除了吧（按进去让你吞下）'%nickname
+            await bot.send_msg(group_id=ctx['group_id'], message=msg)
+            await bot.set_group_ban(group_id=ctx['group_id'], user_id=ctx['user_id'], duration=0)
+            msg = '%s你开心吧？记得下次直播的时候打钱哦~~'%nickname
+            await bot.send_msg(group_id=ctx['group_id'], message=msg)
+            new_value = cur_per - math.floor(mute_time / 60) * 65
+            if new_value < 0:
+                new_value = 0
+            await update_remove_percentage(group_id = ctx['group_id'], new_value = new_value)
+        else:
+            await update_remove_percentage(group_id = ctx['group_id'], new_value = cur_per + math.floor(mute_time / 60) * 65)
 
 
 @on_command('get_remove_mute_percentage', aliases = ('当前豁免几率', '当前赦免概率'), permission=perm.GROUP_MEMBER)
