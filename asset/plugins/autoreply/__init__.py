@@ -109,8 +109,8 @@ async def add_autoreply(session: CommandSession):
                 for user in check_users:
                     await bot.send_private_msg(user_id = user, message = msg)
         super_user = global_var.get_super_users()
-        for user in super_user:
-            await bot.send_private_msg(user_id = user, message = msg)
+        for s_user in super_user:
+            await bot.send_private_msg(user_id = s_user, message = msg)
     else:
         await session.send('发生错误！')
 

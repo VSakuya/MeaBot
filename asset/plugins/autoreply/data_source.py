@@ -85,6 +85,13 @@ async def meassage_convert(in_message:list, raw_message:str):
 
                     if not new_str[len(new_str) - 1] == SPLIT_CHAR and str_index == (len(str_list) - 1):
                         continue
+
+                    if str_index < len(str_list) - 1:
+                        if single_msg:
+                            re_msg.append(single_msg.copy())
+                        single_msg.clear()
+                        continue
+                    
                     if single_msg:
                         re_msg.append(single_msg.copy())
                     if not i == 0:
