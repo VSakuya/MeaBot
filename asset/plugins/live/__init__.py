@@ -84,9 +84,7 @@ async def check_live():
             is_started_B_live = True
         logger.info('B no live')
     else:
-        suser = global_var.get_super_users()
-        for su in suser:
-            await bot.send_private_msg(user_id = su, message='自动获取B站直播数据出错')
+        logger.warn('自动获取B站直播数据出错')
 
     if json_data_YTB:
         is_started_YB_live = True
