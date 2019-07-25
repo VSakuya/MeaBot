@@ -20,9 +20,14 @@ def check_file():
     logger.info('twitter file checked')
 
 async def get_html_soup(url : str):
-    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0'
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0'
     user_referer = url
-    headers = {'User-Agent': user_agent, 'Referer': user_referer}
+    headers = {
+        'User-Agent': user_agent, 
+        'Referer': user_referer,
+        'Cookie': '_twitter_sess=BAh7CSIKZmxhc2hJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNo%250ASGFzaHsABjoKQHVzZWR7ADoPY3JlYXRlZF9hdGwrCB1pzilsAToMY3NyZl9p%250AZCIlNDkwOTM2MmZlNTJmMDU5ZmZhYjY5YjdiYTE2MjA5YWM6B2lkIiVhMDA4%250AYTAwZjQ5OGQ5ZGJmZDYyZjU2ZGJiYzE0ZmQyZg%253D%253D--54945082302206cf29a6ae9f93f9f5be0d7f6c49; personalization_id="v1_3Vp74K4HdHf+y8AcEUay8g=="; guest_id=v1%3A156406948892293100; rweb_optin=side_no_out; ct0=88d508d23e1ac289f924d489f9ba8ea6; lang=en',
+        'Accept-Language': 'en-US,en;q=0.5'
+        }
     req = urllib.request.Request(url, headers=headers)
     html = None
     try:
