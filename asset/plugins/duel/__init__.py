@@ -31,7 +31,7 @@ DEATH_MSG = [
 ]
 MISS_MSG = [
     '欸————竟然没死。',
-    'nickname你真好运',
+    '嗯————nickname你真好运',
     '啧！nickname你还活着啊'
 ]
 SHOT_PARTS = [
@@ -222,6 +222,8 @@ async def handle_group_message(ctx: Context_T):
                     global DEATH_MUTE
                     cur_slot = cur_slot + 1
                     if cur_bullet == cur_slot:
+                        msg = 'Bang!'
+                        await bot.send_group_msg(group_id=group_id, message=msg)
                         rand_death = random.randint(0, len(DEATH_MSG) - 1)
                         msg = DEATH_MSG[rand_death]
                         msg = msg.replace('nickname', nickname)
@@ -231,6 +233,8 @@ async def handle_group_message(ctx: Context_T):
                         msg = '游戏结束！'
                         await bot.send_group_msg(group_id=group_id, message=msg)
                     else:
+                        msg = '咔擦!'
+                        await bot.send_group_msg(group_id=group_id, message=msg)
                         rand_miss = random.randint(0, len(MISS_MSG) - 1)
                         msg = MISS_MSG[rand_miss]
                         msg = msg.replace('nickname', nickname)
