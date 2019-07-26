@@ -120,8 +120,10 @@ async def time_out_check(group_id: int):
                 s_name = ''
                 try:
                     s_info = await bot.get_group_member_info(group_id = group_id, user_id = s_id)
-                    if 'card' in s_info:
+                    if s_info['card'] != '':
                         s_name = s_info['card']
+                    else:
+                        s_name = s_info['nickname']
                 except:
                     logger.warn('决斗获取个人数据失败')
                 if s_name == '':
