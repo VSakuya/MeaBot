@@ -60,11 +60,13 @@ async def duel_nl(session: NLPSession):
         if tools.is_int(num):
             num = int(num)
             if num < 2 or num > MAX_PART_NUM:
-                return IntentCommand(90.0, 'duel_c', current_arg=num)
-            else:
                 await session.send('这人数什么鬼？2~6个人啊！你跟那个姓凑学的数学的吗？')
+                return
+            else:
+                return IntentCommand(90.0, 'duel_c', current_arg=num)
         else:
             await session.send('哈？数字！数字懂吗？3x7=27')
+            return
     return IntentCommand(90.0, 'duel_c')
 
 @on_command('duel_c', aliases=('决斗', '俄罗斯轮盘'), permission=perm.GROUP_MEMBER)
@@ -144,6 +146,9 @@ async def dc_parser(session: CommandSession):
     if session.is_first_run:
         if stripped_arg and tools.is_int(stripped_arg):
             session.state['part_num'] = int(stripped_arg)
+            return
+        elif session.current_arg:
+            session.state['part_num'] = int(session.current_arg)
             return
 
     elif session.current_key == 'part_num':
