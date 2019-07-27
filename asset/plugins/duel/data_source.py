@@ -65,7 +65,7 @@ async def get_user_duel_data(group_id: int, user_id: int, bullets_use: int = 0):
             for s_key in user_data[key]:
                 if not s_key in r_data:
                     r_data[s_key] = 0
-                r_data[s_key] = r_data[s_key] + r_data[s_key]
+                r_data[s_key] = r_data[s_key] + user_data[key][s_key]
         if not r_data:
             return None
         return r_data
