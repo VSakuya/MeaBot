@@ -461,10 +461,10 @@ async def duel_manager(group_id : int):
         cur_shot_index = 0
         if cur_point_user:
             cur_index = cur_parts.index(cur_point_user)
-            if cur_index > len(cur_parts) - 1:
+            if cur_index >= len(cur_parts) - 1:
                 cur_shot_index = 0
             else:
-                cur_shot_index = cur_parts.index(cur_point_user) + 1
+                cur_shot_index = cur_index + 1
         cur_shot_user = cur_parts[cur_shot_index]
         nickname = ''
         try:
@@ -488,7 +488,8 @@ async def duel_manager(group_id : int):
         cur_data['state'] = duel_state.WAIT_CONFIRM
         cur_data['cur_point_user'] = cur_shot_user
         DUEL_DATA[str(group_id)] = cur_data.copy()
-        asyncio.ensure_future(time_out_check(group_id))
+        cur_time = math.floor(time.time())
+        asyncio.ensure_future(time_out_check(group_id, cur_time))
 
 @on_command('duel_query_single', aliases=('决斗战绩', '查询决斗战绩'), permission=perm.GROUP_MEMBER)
 @check_black_list()
