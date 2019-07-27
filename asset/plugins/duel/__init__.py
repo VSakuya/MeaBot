@@ -535,4 +535,15 @@ async def dqs_parser(session: CommandSession):
             return
 
 
+@on_command('clear_data', aliases=('重置战局', '战局重置'), permission=perm.GROUP_ADMIN)
+@check_black_list()
+async def clear_data(session: CommandSession):
+    ctx = session.ctx.copy()
+    user_id = ctx['user_id']
+    group_id = ctx['group_id']
+    global DUEL_DATA
+    if str(group_id) in DUEL_DATA:
+        del DUEL_DATA[str(group_id)]
+        await session.send('成功！')
+
 check_file()
