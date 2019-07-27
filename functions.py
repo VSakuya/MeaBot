@@ -1,6 +1,7 @@
 import json
 import os
 import math
+import random
 from nonebot.session import BaseSession
 
 class black_list:
@@ -224,6 +225,18 @@ class tools:
         if minute > 0:
             r_str = r_str + '%d分钟'%minute
         return r_str
+
+    @staticmethod
+    def rand_uniint_list(start:int, end:int, size:int) -> list:
+        if start - end > size or size <= 0:
+            raise ValueError
+        result = []
+        for index in range(size):
+            item = random.randint(start, end)
+            while item in result:
+                item = random.randint(start, end)
+            result.append(item)
+        return result
 
     @staticmethod
     def is_int(s : str) -> bool:
