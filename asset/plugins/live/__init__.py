@@ -116,6 +116,7 @@ async def check_live():
                     pass
                 await bot.send_group_msg(group_id=item['group_id'], message='Mea正在Youtube直播！！！')
         elif not (is_started_B_live or is_started_YB_live) and is_started_TC_live:
+            for item in group_list:
                 try:
                     await bot.send_group_msg(group_id=item['group_id'], message=MessageSegment(type_='at', data={'qq': 'all'}))
                 except:
