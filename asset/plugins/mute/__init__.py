@@ -226,20 +226,26 @@ async def handle_group_message(ctx: Context_T):
         if item['group_id']:
             item_qun = int(item['group_id'])
         if (ctx['group_id'] == item_qun and ctx['user_id'] == item_qq) or (item_qun == None and ctx['user_id'] == item_qq) or (item_qq == None and ctx['group_id'] == item_qun):
+            nickname = ''
+            if 'card' in ctx['sender']:
+                if ctx['sender']['card'] != '':
+                    nickname = ctx['sender']['card']
+                else:
+                    nickname = ctx['sender']['nickname'] 
+            else:
+                nickname = ctx['sender']['nickname']
             key_words_str = item['key_word']
+            if key_words_str == '*':
+                await bot.set_group_ban(group_id=ctx['group_id'], user_id=ctx['user_id'], duration=int(item['mute_time']))
+                message = '%s迫害成功'%nickname
+                await bot.send_msg(group_id=ctx['group_id'], message=message)
+                return
             key_words = key_words_str.split('|')
             for word in key_words:
                 if ctx['raw_message'].find(word) >= 0:
                     found_it = True
                     await bot.set_group_ban(group_id=ctx['group_id'], user_id=ctx['user_id'], duration=int(item['mute_time']))
-                    nickname = ''
-                    if 'card' in ctx['sender']:
-                        if ctx['sender']['card'] != '':
-                            nickname = ctx['sender']['card']
-                        else:
-                           nickname = ctx['sender']['nickname'] 
-                    else:
-                        nickname = ctx['sender']['nickname']
+                    
                     message = '%s迫害成功'%nickname
                     await bot.send_msg(group_id=ctx['group_id'], message=message)
             if found_it:
