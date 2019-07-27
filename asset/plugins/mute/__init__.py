@@ -215,8 +215,7 @@ async def handle_group_message(ctx: Context_T):
                     await bot.send_msg(**msg_ctx)
                 
     global DATA_LIST
-    if DATA_LIST == None:
-        DATA_LIST = await get_mute_data()
+    DATA_LIST = await get_mute_data()
     found_it = False
     for item in DATA_LIST:
         item_qq = None
