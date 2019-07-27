@@ -11,6 +11,7 @@ from nonebot import Message, MessageSegment
 from nonebot import logger
 from nonebot.typing import Context_T
 
+from .data_source import *
 from functions import check_black_list
 from functions import tools
 
@@ -26,6 +27,7 @@ DUEL_DATA = {}
 MAX_PART_NUM = 6
 TIME_OUT = 60
 DEATH_MSG = [
+    '果断，就会白给。',
     '犹豫，就会败北。',
     'nickname桑！！nickname桑！！！！这里有医生吗！！我一直，一直对nickname桑你…………哈哈哈哈哈哈哈哈哈嗝',
     '啊，死掉了。',
@@ -44,7 +46,10 @@ SHOT_PARTS = [
     '最喜欢的手办',
     '暑假作业'
 ]
-DEATH_MUTE = 153 * 60
+MAX_DEATH_MUTE = 3600
+MIN_DEATH_MUTE = 600
+CUR_ALIVE = {}
+CUR_DEATH = {}
 
 class duel_state(Enum):
     INIT = 0
@@ -93,54 +98,20 @@ async def duel_c(session: CommandSession):
                 nickname = ctx['sender']['nickname'] 
         else:
             nickname = ctx['sender']['nickname']
-        rand_num = random.randint(1, MAX_PART_NUM)
+        rand_num = tools.rand_uniint_list(1, MAX_PART_NUM, 1)
         DUEL_DATA[str(group_id)] = {
             'initiator' : user_id,
-            'participants' : [user_id],
+            'part_list' : [user_id],
             'max_num': int(part_num),
             'cur_bullet' : rand_num,
             'cur_slot' : 0,
             'state': duel_state.WAIT_OPPONENT,
-            'cur_point' : 0
+            'cur_point' : 0,
+            'bullet_loaded': 1
         }
         msg = '%s发起俄罗斯轮盘成功！参与者发送含“参上”的信息即可参加！'%nickname
         await session.send(msg)
         asyncio.ensure_future(time_out_check(group_id))
-
-        
-
-async def time_out_check(group_id: int):
-    global bot
-    global DUEL_DATA
-    await asyncio.sleep(TIME_OUT)
-    if DUEL_DATA[str(group_id)]['state'] == duel_state.WAIT_OPPONENT:
-        msg = '报名时间到！'
-        await bot.send_group_msg(group_id=group_id, message=msg)
-        cur_parts = DUEL_DATA[str(group_id)]['participants']
-        if len(cur_parts) >= 2:
-            msg = '俄罗斯转盘开始！咔擦咔擦咔擦~~，参加者有：'
-            for s_id in cur_parts:
-                s_name = ''
-                try:
-                    s_info = await bot.get_group_member_info(group_id = group_id, user_id = s_id)
-                    if s_info['card'] != '':
-                        s_name = s_info['card']
-                    else:
-                        s_name = s_info['nickname']
-                except:
-                    logger.warn('决斗获取个人数据失败')
-                if s_name == '':
-                    s_name = str(s_id)
-                msg = msg + '\n' + s_name
-            try:
-                await bot.send_group_msg(group_id=group_id, message=msg)
-            except:
-                pass
-            await duel_manager(group_id)
-        else:
-            msg = '报名人数不足！'
-            await bot.send_group_msg(group_id=group_id, message=msg)
-            del DUEL_DATA[str(group_id)]
 
 @duel_c.args_parser
 async def dc_parser(session: CommandSession):
@@ -166,6 +137,141 @@ async def dc_parser(session: CommandSession):
         else:
             session.state['part_num'] = int(stripped_arg)
 
+@on_natural_language(keywords={'自定决斗'})
+@check_black_list()
+async def duel_cus_nl(session: NLPSession):
+    stripped_msg = session.msg_text.strip()
+    num = stripped_msg.replace('自定决斗', '')
+    global MAX_PART_NUM
+    if num:
+        if tools.is_int(num):
+            num = int(num)
+            if num < 2 or num > MAX_PART_NUM:
+                await session.send('这人数什么鬼？2~6个人啊！你跟那个姓凑学的数学的吗？')
+                return
+            else:
+                return IntentCommand(90.0, 'duel_c_c', current_arg=num)
+        else:
+            await session.send('哈？数字！数字懂吗？3x7=27')
+            return
+    return IntentCommand(90.0, 'duel_c_c')
+
+@on_command('duel_c_c', aliases=('自定决斗', '自定俄罗斯轮盘'), permission=perm.GROUP_MEMBER)
+@check_black_list()
+async def duel_c_c(session: CommandSession):
+    global DUEL_DATA
+    global TIME_OUT
+    global MAX_PART_NUM
+    ctx = session.ctx.copy()
+    user_id = ctx['user_id']
+    group_id = ctx['group_id']
+    if str(group_id) in DUEL_DATA:
+        session.finish('群里当前已经有人在玩了！')
+    max_bullets = session.get('max_bullets', prompt='放进去的子弹数量是？')
+    if not max_bullets:
+        return
+    part_num = session.get('part_num', prompt='最大参加人数是？')
+    if not part_num:
+        return
+    nickname = ''
+    if 'card' in ctx['sender']:
+        if ctx['sender']['card'] != '':
+            nickname = ctx['sender']['card']
+        else:
+            nickname = ctx['sender']['nickname'] 
+    else:
+        nickname = ctx['sender']['nickname']
+    rand_num = tools.rand_uniint_list(1, MAX_PART_NUM, max_bullets)
+    DUEL_DATA[str(group_id)] = {
+        'initiator' : user_id,
+        'part_list' : [user_id],
+        'max_num': int(part_num),
+        'cur_bullet' : rand_num,
+        'cur_slot' : 0,
+        'state': duel_state.WAIT_OPPONENT,
+        'cur_point' : 0,
+        'bullet_loaded': 1
+    }
+    msg = '%s发起俄罗斯轮盘成功！参与者发送含“参上”的信息即可参加！'%nickname
+    await session.send(msg)
+    asyncio.ensure_future(time_out_check(group_id))
+
+@duel_c_c.args_parser
+async def dcc_parser(session: CommandSession):
+    global MAX_PART_NUM
+    ctx = session.ctx.copy()
+    user_id = ctx['user_id']
+    group_id = ctx['group_id']
+    stripped_arg = session.current_arg_text.strip()
+    if stripped_arg == 'stop':
+        session.finish('强制结束手冲')
+    if session.is_first_run:
+        if stripped_arg and tools.is_int(stripped_arg):
+            session.state['max_loaded'] = int(stripped_arg)
+            return
+        elif session.current_arg:
+            session.state['max_loaded'] = int(session.current_arg)
+            return
+
+    elif session.current_key == 'max_bullets':
+        if not stripped_arg:
+            session.pause('你哑巴了嘛')
+        if not tools.is_int(stripped_arg):
+            session.pause('哈？数字！数字懂吗？3x7=27')
+        elif int(stripped_arg) > MAX_PART_NUM:
+            session.send('多余的子弹，就送给你吧！')
+            session.send('咔嚓')
+            session.send('Bang！')
+            await bot.set_group_ban(group_id=group_id, user_id=user_id, duration=60)
+            session.finish('游戏结束！')
+        else:
+            session.state['max_bullets'] = int(stripped_arg)
+
+    elif session.current_key == 'part_num':
+        if not stripped_arg:
+            session.pause('你哑巴了嘛')
+        if not tools.is_int(stripped_arg):
+            session.pause('哈？数字！数字懂吗？3x7=27')
+        elif int(stripped_arg) < 2 or int(stripped_arg) > MAX_PART_NUM:
+            session.pause('这人数什么鬼？2~6个人啊！你跟那个姓凑学的数学的吗？')
+        else:
+            session.state['part_num'] = int(stripped_arg)
+
+
+async def time_out_check(group_id: int):
+    global bot
+    global DUEL_DATA
+    await asyncio.sleep(TIME_OUT)
+    if DUEL_DATA[str(group_id)]['state'] == duel_state.WAIT_OPPONENT:
+        msg = '报名时间到！'
+        await bot.send_group_msg(group_id=group_id, message=msg)
+        cur_parts = DUEL_DATA[str(group_id)]['part_list']
+        if len(cur_parts) >= 2:
+            msg = '俄罗斯转盘开始！咔擦咔擦咔擦~~，参加者有：'
+            for s_id in cur_parts:
+                s_name = ''
+                try:
+                    s_info = await bot.get_group_member_info(group_id = group_id, user_id = s_id)
+                    if s_info['card'] != '':
+                        s_name = s_info['card']
+                    else:
+                        s_name = s_info['nickname']
+                except:
+                    logger.warn('决斗获取个人数据失败')
+                if s_name == '':
+                    s_name = str(s_id)
+                msg = msg + '\n' + s_name
+            try:
+                await bot.send_group_msg(group_id=group_id, message=msg)
+            except:
+                pass
+            DUEL_DATA[str(group_id)]['state'] = duel_state.START_DUEL
+            await duel_manager(group_id)
+        else:
+            msg = '报名人数不足！'
+            await bot.send_group_msg(group_id=group_id, message=msg)
+            del DUEL_DATA[str(group_id)]
+
 bot = nonebot.get_bot()
 @bot.on_message('group')
 async def handle_group_message(ctx: Context_T):
@@ -180,7 +286,7 @@ async def handle_group_message(ctx: Context_T):
             cur_data = DUEL_DATA[str(group_id)]
             cur_state = cur_data['state']
             cur_point = cur_data['cur_point']
-            cur_parts = cur_data['participants']
+            cur_parts = cur_data['part_list']
             max_num = cur_data['max_num']
             nickname = ''
             if 'card' in ctx['sender']:
@@ -197,7 +303,7 @@ async def handle_group_message(ctx: Context_T):
                         return
                     else:
                         cur_parts.append(user_id)
-                        DUEL_DATA[str(group_id)]['participants'] = cur_parts.copy()
+                        DUEL_DATA[str(group_id)]['part_list'] = cur_parts.copy()
                         msg = '%s参加成功！'%nickname
                         await bot.send_group_msg(group_id=group_id, message=msg)
                         if len(cur_parts) >= max_num:
@@ -226,25 +332,39 @@ async def handle_group_message(ctx: Context_T):
                 cur_point_user = cur_point
                 cur_slot = cur_data['cur_slot']
                 cur_bullet = cur_data['cur_bullet']
+                bullet_loaded = cur_data['bullet_loaded']
                 if '好了' in raw_message and user_id == cur_point_user:
                     global DEATH_MSG
                     global MISS_MSG
-                    global DEATH_MUTE
+                    global MAX_DEATH_MUTE
+                    global MIN_DEATH_MUTE
+                    global CUR_ALIVE
+                    global CUR_DEATH
                     cur_slot = cur_slot + 1
-                    if cur_bullet == cur_slot:
+                    if cur_slot in cur_bullet:
+                        CUR_DEATH[str(group_id)] = []
+                        CUR_DEATH[str(group_id)].append(user_id)
+                        msg = '咔嚓!'
+                        await bot.send_group_msg(group_id=group_id, message=msg)
+                        await asyncio.sleep(1)
                         msg = 'Bang!'
                         await bot.send_group_msg(group_id=group_id, message=msg)
+                        cur_bullet.remove(cur_slot)
                         rand_death = random.randint(0, len(DEATH_MSG) - 1)
                         msg = DEATH_MSG[rand_death]
                         msg = msg.replace('nickname', nickname)
-                        await bot.set_group_ban(group_id=group_id, user_id=user_id, duration=DEATH_MUTE)
+                        await bot.set_group_ban(group_id=group_id, user_id=user_id, duration=random.randint(MIN_DEATH_MUTE, MAX_DEATH_MUTE))
                         await bot.send_group_msg(group_id=group_id, message=msg)
-                        del DUEL_DATA[str(group_id)]
-                        msg = '游戏结束！'
-                        await bot.send_group_msg(group_id=group_id, message=msg)
+                        if not cur_bullet:
+                            del DUEL_DATA[str(group_id)]
+                            msg = '游戏结束！'
+                            await bot.send_group_msg(group_id=group_id, message=msg)
                     else:
-                        msg = '咔擦!'
+                        CUR_ALIVE[str(group_id)] = []
+                        CUR_ALIVE[str(group_id)].append(user_id)
+                        msg = '咔嚓!'
                         await bot.send_group_msg(group_id=group_id, message=msg)
+                        await asyncio.sleep(1)
                         rand_miss = random.randint(0, len(MISS_MSG) - 1)
                         msg = MISS_MSG[rand_miss]
                         msg = msg.replace('nickname', nickname)
@@ -263,13 +383,13 @@ async def duel_manager(group_id : int):
     global SHOT_PARTS
     cur_data = DUEL_DATA[str(group_id)]
     cur_state = cur_data['state']
-    cur_parts = cur_data['participants']
+    cur_parts = cur_data['part_list']
     cur_slot = cur_data['cur_slot']
     max_num = cur_data['max_num']
     if not str(group_id) in DUEL_DATA:
         return
     if cur_state == duel_state.START_DUEL:
-        cur_shot_index = cur_slot % max_num
+        cur_shot_index = cur_slot % len(cur_parts)
         cur_shot_user = cur_parts[cur_shot_index]
         nickname = ''
         try:
@@ -289,7 +409,9 @@ async def duel_manager(group_id : int):
         )
         await bot.send_group_msg(group_id = group_id, message = msg)
         cur_parts.append(cur_shot_user)
-        cur_data['participants'] = cur_parts
+        cur_data['part_list'] = cur_parts
         cur_data['state'] = duel_state.WAIT_CONFIRM
         cur_data['cur_point'] = cur_shot_user
         DUEL_DATA[str(group_id)] = cur_data.copy()
+
+check_file()
