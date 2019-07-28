@@ -227,9 +227,29 @@ async def dcc_parser(session: CommandSession):
         session.finish('强制结束手冲')
     if session.is_first_run:
         if stripped_arg and tools.is_int(stripped_arg):
+            if int(stripped_arg) > MAX_PART_NUM:
+                await session.send('多余的子弹，就送给你吧！')
+                await asyncio.sleep(1)
+                await session.send('咔嚓')
+                await asyncio.sleep(1)
+                await session.send('Bang！')
+                await asyncio.sleep(1)
+                await bot.set_group_ban(group_id=group_id, user_id=user_id, duration=60)
+                session.finish('游戏结束！')
+                return
             session.state['max_loaded'] = int(stripped_arg)
             return
         elif session.current_arg and tools.is_int(session.current_arg):
+            if int(stripped_arg) > MAX_PART_NUM:
+                await session.send('多余的子弹，就送给你吧！')
+                await asyncio.sleep(1)
+                await session.send('咔嚓')
+                await asyncio.sleep(1)
+                await session.send('Bang！')
+                await asyncio.sleep(1)
+                await bot.set_group_ban(group_id=group_id, user_id=user_id, duration=60)
+                session.finish('游戏结束！')
+                return
             session.state['max_loaded'] = int(session.current_arg)
             return
 
@@ -239,9 +259,12 @@ async def dcc_parser(session: CommandSession):
         if not tools.is_int(stripped_arg):
             session.pause('哈？数字！数字懂吗？3x7=27')
         elif int(stripped_arg) > MAX_PART_NUM:
-            session.send('多余的子弹，就送给你吧！')
-            session.send('咔嚓')
-            session.send('Bang！')
+            await session.send('多余的子弹，就送给你吧！')
+            await asyncio.sleep(1)
+            await session.send('咔嚓')
+            await asyncio.sleep(1)
+            await session.send('Bang！')
+            await asyncio.sleep(1)
             await bot.set_group_ban(group_id=group_id, user_id=user_id, duration=60)
             session.finish('游戏结束！')
         else:
