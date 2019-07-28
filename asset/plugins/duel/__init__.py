@@ -346,7 +346,7 @@ async def time_out_check(group_id: int, time: int):
             nickname = str(cur_point_user)
         if cur_slot in cur_bullet:
             # cur_parts.remove(cur_point_user)
-            # cur_bullet.remove(cur_slot)
+            cur_bullet.remove(cur_slot)
             msg = '咔嚓!'
             await bot.send_group_msg(group_id=group_id, message=msg)
             await asyncio.sleep(1)
@@ -468,7 +468,7 @@ async def handle_group_message(ctx: Context_T):
                     nickname = str(cur_point_user)
                 if cur_slot in cur_bullet:
                     # cur_parts.remove(cur_point_user)
-                    # cur_bullet.remove(cur_slot)
+                    cur_bullet.remove(cur_slot)
                     msg = '咔嚓!'
                     await bot.send_group_msg(group_id=group_id, message=msg)
                     await asyncio.sleep(1)
