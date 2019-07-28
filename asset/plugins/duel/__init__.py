@@ -361,7 +361,7 @@ async def time_out_check(group_id: int, time: int):
             if not str(group_id) in DEATH_DATA:
                 DEATH_DATA[str(group_id)] = []
             DEATH_DATA[str(group_id)].append(cur_point_user)
-            if (not cur_bullet) or (len(cur_parts) - len(DEATH_DATA[str(group_id)])) <= 1:
+            if len(cur_bullet) <= 0 or (len(cur_parts) - len(DEATH_DATA[str(group_id)])) <= 1:
                 msg = '游戏结束！'
                 await bot.send_group_msg(group_id=group_id, message=msg)
                 for item in cur_parts:
@@ -483,7 +483,7 @@ async def handle_group_message(ctx: Context_T):
                     if not str(group_id) in DEATH_DATA:
                         DEATH_DATA[str(group_id)] = []
                     DEATH_DATA[str(group_id)].append(cur_point_user)
-                    if (not cur_bullet) or (len(cur_parts) - len(DEATH_DATA[str(group_id)])) <= 1:
+                    if len(cur_bullet) <= 0 or (len(cur_parts) - len(DEATH_DATA[str(group_id)])) <= 1:
                         msg = '游戏结束！'
                         await bot.send_group_msg(group_id=group_id, message=msg)
                         for item in cur_parts:
