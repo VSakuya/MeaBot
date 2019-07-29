@@ -18,7 +18,7 @@ from functions import tools
 
 
 __plugin_name__ = '决斗'
-__plugin_usage__ = r"""俄罗斯轮盘小游戏，默认六个弹舱1发子弹，输了口随机时间
+__plugin_usage__ = r"""俄罗斯轮盘小游戏，默认六个弹舱1发子弹，输了口随机时间 
 (人类为什么不能互相理解啊！！！！)
 指令：
 ！决斗/俄罗斯轮盘 （群成员 可直接命令[空格]+人数）
@@ -49,8 +49,8 @@ SHOT_PARTS = [
     '最喜欢的手办',
     '暑假作业'
 ]
-MAX_DEATH_MUTE = 3600
-MIN_DEATH_MUTE = 600
+MAX_DEATH_MUTE = 600   
+MIN_DEATH_MUTE = 60
 DEATH_DATA = {}
 
 class duel_state(Enum):
@@ -651,5 +651,14 @@ async def clear_data(session: CommandSession):
     if str(group_id) in DUEL_DATA:
         del DUEL_DATA[str(group_id)]
         await session.send('成功！')
+
+@on_command('query_duel_data', aliases=('排行决斗', '决斗排行'), permission=perm.GROUP_ADMIN)
+@check_black_list()
+async def query_duel_data(session: CommandSession):
+    ctx = session.ctx.copy()
+    user_id = ctx['user_id']
+    group_id = ctx['group_id']
+    duel_data = await get_user_duel_data(group_id = group_id, bullets_use=1)
+    print(duel_data)
 
 check_file()
