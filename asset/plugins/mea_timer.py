@@ -12,7 +12,7 @@ from datetime import datetime
 import asset.plugins.live as live
 import asset.plugins.twitter as twitter
 import asset.plugins.mute as mute
-import asset.plugins.leisure_talk as l_talk
+# import asset.plugins.leisure_talk as l_talk
 
 RAND_COUNT = 0
 
