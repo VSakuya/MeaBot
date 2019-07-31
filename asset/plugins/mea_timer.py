@@ -25,8 +25,8 @@ async def main_timer():
     if now.second == 0:
         RAND_COUNT = random.randint(0, 3)
     if now.second == RAND_COUNT * 5:
-    #     asyncio.ensure_future(live.check_live())
-        # asyncio.ensure_future(twitter.check_twitter())
+        asyncio.ensure_future(live.check_live())
+        asyncio.ensure_future(twitter.check_twitter())
         pass
     if now.hour == 0 and now.minute <= 30 and now.second == 0:
         asyncio.ensure_future(daily_del_file())
