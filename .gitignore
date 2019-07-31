@@ -106,6 +106,7 @@ new_music/raise - 黒羽翼堕天.mp3
 proxy.bat
 .vscode/launch.json
 asset/data/
+asset/backup/
 asset/plugins/twitter/233.html
 asset/plugins/weather/
 asset/plugins/test.py

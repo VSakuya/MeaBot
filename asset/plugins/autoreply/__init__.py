@@ -424,7 +424,7 @@ async def del_ar_by_GA(session: CommandSession):
     ctx = session.ctx.copy()
     key_word = session.get('key_word', prompt = '需要删除的自动回复关键字是啥啊？')
     key_list = await get_key_list(ctx['group_id'])
-    result = await del_reply_data(group_id = ctx['group_id'], key = key_word, is_del_file=True)
+    result = await del_reply_data(group_id = ctx['group_id'], key = key_word, is_del_file=False)
     if key_word:
         if not key_word in key_list:
             session.finish('看清楚有没有这个关键字再删除啊喂！你这个文盲大猩猩！')
