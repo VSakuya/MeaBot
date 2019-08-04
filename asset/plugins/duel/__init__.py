@@ -60,34 +60,34 @@ class duel_state(Enum):
     WAIT_CONFIRM = 3
     FINISH = 4
 
-@on_natural_language(keywords={'决斗'})
-@check_black_list()
-async def duel_nl(session: NLPSession):
-    stripped_msg = session.msg_text.strip()
-    if '自定决斗' in stripped_msg:
-        return
-    global DUEL_DATA
-    ctx = session.ctx.copy()
-    group_id = ctx['group_id']
-    if str(group_id) in DUEL_DATA:
-        session.send('群里当前已经有人在玩了！')
-        return
-    num = stripped_msg.replace('决斗', '')
-    global MAX_PART_NUM
-    if num:
-        if tools.is_int(num):
-            num = int(num)
-            if num < 2 or num > MAX_PART_NUM:
-                await session.send('这人数什么鬼？2~6个人啊！你跟那个姓凑学的数学的吗？')
-                return
-            else:
-                return IntentCommand(90.0, 'duel_c', current_arg=num)
-        else:
-            await session.send('哈？数字！数字懂吗？3x7=27')
-            return
-    return IntentCommand(90.0, 'duel_c')
+# @on_natural_language(keywords={'决斗'})
+# @check_black_list()
+# async def duel_nl(session: NLPSession):
+#     stripped_msg = session.msg_text.strip()
+#     if '自定决斗' in stripped_msg:
+#         return
+#     global DUEL_DATA
+#     ctx = session.ctx.copy()
+#     group_id = ctx['group_id']
+#     if str(group_id) in DUEL_DATA:
+#         session.send('群里当前已经有人在玩了！')
+#         return
+#     num = stripped_msg.replace('决斗', '')
+#     global MAX_PART_NUM
+#     if num:
+#         if tools.is_int(num):
+#             num = int(num)
+#             if num < 2 or num > MAX_PART_NUM:
+#                 await session.send('这人数什么鬼？2~6个人啊！你跟那个姓凑学的数学的吗？')
+#                 return
+#             else:
+#                 return IntentCommand(90.0, 'duel_c', current_arg=num)
+#         else:
+#             await session.send('哈？数字！数字懂吗？3x7=27')
+#             return
+#     return IntentCommand(90.0, 'duel_c')
 
-@on_command('duel_c', aliases=('决斗', '俄罗斯轮盘'), permission=perm.GROUP_MEMBER)
+@on_command('duel_c', aliases=('决斗', '俄罗斯轮盘'), permission=perm.GROUP_ADMIN)
 @check_black_list()
 async def duel_c(session: CommandSession):
     global DUEL_DATA
@@ -149,32 +149,32 @@ async def dc_parser(session: CommandSession):
         else:
             session.state['part_num'] = int(stripped_arg)
 
-@on_natural_language(keywords={'自定决斗'})
-@check_black_list()
-async def duel_cus_nl(session: NLPSession):
-    stripped_msg = session.msg_text.strip()
-    num = stripped_msg.replace('自定决斗', '')
-    global MAX_PART_NUM
-    global DUEL_DATA
-    ctx = session.ctx.copy()
-    group_id = ctx['group_id']
-    if str(group_id) in DUEL_DATA:
-        session.send('群里当前已经有人在玩了！')
-        return
-    if num:
-        if tools.is_int(num):
-            num = int(num)
-            if num < 1:
-                await session.send('你这个子弹数量？你是池沼吗？')
-                return
-            else:
-                return IntentCommand(100.0, 'duel_c_c', current_arg=num)
-        else:
-            await session.send('哈？数字！数字懂吗？3x7=27')
-            return
-    return IntentCommand(100.0, 'duel_c_c')
+# @on_natural_language(keywords={'自定决斗'})
+# @check_black_list()
+# async def duel_cus_nl(session: NLPSession):
+#     stripped_msg = session.msg_text.strip()
+#     num = stripped_msg.replace('自定决斗', '')
+#     global MAX_PART_NUM
+#     global DUEL_DATA
+#     ctx = session.ctx.copy()
+#     group_id = ctx['group_id']
+#     if str(group_id) in DUEL_DATA:
+#         session.send('群里当前已经有人在玩了！')
+#         return
+#     if num:
+#         if tools.is_int(num):
+#             num = int(num)
+#             if num < 1:
+#                 await session.send('你这个子弹数量？你是池沼吗？')
+#                 return
+#             else:
+#                 return IntentCommand(100.0, 'duel_c_c', current_arg=num)
+#         else:
+#             await session.send('哈？数字！数字懂吗？3x7=27')
+#             return
+#     return IntentCommand(100.0, 'duel_c_c')
 
-@on_command('duel_c_c', aliases=('自定决斗', '自定俄罗斯轮盘'), permission=perm.GROUP_MEMBER)
+@on_command('duel_c_c', aliases=('自定决斗', '自定俄罗斯轮盘'), permission=perm.GROUP_ADMIN)
 @check_black_list()
 async def duel_c_c(session: CommandSession):
     global DUEL_DATA
@@ -656,9 +656,45 @@ async def clear_data(session: CommandSession):
 @check_black_list()
 async def query_duel_data(session: CommandSession):
     ctx = session.ctx.copy()
-    user_id = ctx['user_id']
+    bot = session.bot
     group_id = ctx['group_id']
-    duel_data = await get_user_duel_data(group_id = group_id, bullets_use=1)
+    duel_data = await get_user_duel_data(group_id = group_id)
+    list_data = {}
+    for u_key in duel_data:
+        for n_key in duel_data[u_key]:
+            if not n_key in list_data:
+                list_data[n_key] = {}
+            if not duel_data[u_key][n_key] in list_data[n_key]:
+                list_data[n_key][duel_data[u_key][n_key]] = []
+            list_data[n_key][duel_data[u_key][n_key]].append(u_key)
+    ad_list = {}
+    for n_key in list_data:
+        if not n_key in ad_list:
+            ad_list[n_key] = []
+        ad_list[n_key] = sorted(list_data[n_key],reverse = True)
+
+    msg = '当前存活排行是：\n第一梯队是：'
+    for index in range(6):
+        if index <= 2:
+            if index == 1:
+                msg = msg + '\n第二梯队是：'
+            elif index == 2:
+                msg = msg + '\n第三梯队是：'
+            for s_id in ad_list['alive'][index]:
+                s_name = ''
+                try:
+                    s_info = await bot.get_group_member_info(group_id = group_id, user_id = int(s_id))
+                    if s_info['card'] != '':
+                        s_name = s_info['card']
+                    else:
+                        s_name = s_info['nickname']
+                except:
+                    logger.warn('决斗获取个人数据失败')
+                if s_name == '':
+                    s_name = str(s_id)
+                msg = msg + s_name
     print(duel_data)
+    print(list_data)
+    print(ad_list)
 
 check_file()
