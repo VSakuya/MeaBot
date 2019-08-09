@@ -89,7 +89,7 @@ async def duel_nl(session: NLPSession):
             return
     return IntentCommand(90.0, 'duel_c')
 
-@on_command('duel_c', aliases=('决斗', '俄罗斯轮盘'), permission=perm.GROUP_ADMIN)
+@on_command('duel_c', aliases=('决斗', '俄罗斯轮盘'), permission=perm.GROUP_MEMBER)
 @check_black_list()
 async def duel_c(session: CommandSession):
     global DUEL_DATA
@@ -184,7 +184,7 @@ async def duel_cus_nl(session: NLPSession):
             return
     return IntentCommand(100.0, 'duel_c_c')
 
-@on_command('duel_c_c', aliases=('自定决斗', '自定俄罗斯轮盘'), permission=perm.GROUP_ADMIN)
+@on_command('duel_c_c', aliases=('自定决斗', '自定俄罗斯轮盘'), permission=perm.GROUP_MEMBER)
 @check_black_list()
 async def duel_c_c(session: CommandSession):
     global DUEL_DATA
