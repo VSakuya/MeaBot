@@ -49,9 +49,11 @@ SHOT_PARTS = [
     '最喜欢的手办',
     '暑假作业'
 ]
-MAX_DEATH_MUTE = 600   
-MIN_DEATH_MUTE = 60
+MAX_DEATH_MUTE = 2400   
+MIN_DEATH_MUTE = 1200
 DEATH_DATA = {}
+CD_TIME = 300
+CD_DATA = {}
 
 class duel_state(Enum):
     INIT = 0
@@ -60,32 +62,32 @@ class duel_state(Enum):
     WAIT_CONFIRM = 3
     FINISH = 4
 
-# @on_natural_language(keywords={'决斗'})
-# @check_black_list()
-# async def duel_nl(session: NLPSession):
-#     stripped_msg = session.msg_text.strip()
-#     if '自定决斗' in stripped_msg:
-#         return
-#     global DUEL_DATA
-#     ctx = session.ctx.copy()
-#     group_id = ctx['group_id']
-#     if str(group_id) in DUEL_DATA:
-#         session.send('群里当前已经有人在玩了！')
-#         return
-#     num = stripped_msg.replace('决斗', '')
-#     global MAX_PART_NUM
-#     if num:
-#         if tools.is_int(num):
-#             num = int(num)
-#             if num < 2 or num > MAX_PART_NUM:
-#                 await session.send('这人数什么鬼？2~6个人啊！你跟那个姓凑学的数学的吗？')
-#                 return
-#             else:
-#                 return IntentCommand(90.0, 'duel_c', current_arg=num)
-#         else:
-#             await session.send('哈？数字！数字懂吗？3x7=27')
-#             return
-#     return IntentCommand(90.0, 'duel_c')
+@on_natural_language(keywords={'决斗'})
+@check_black_list()
+async def duel_nl(session: NLPSession):
+    stripped_msg = session.msg_text.strip()
+    if '自定决斗' in stripped_msg:
+        return
+    global DUEL_DATA
+    ctx = session.ctx.copy()
+    group_id = ctx['group_id']
+    if str(group_id) in DUEL_DATA:
+        session.send('群里当前已经有人在玩了！')
+        return
+    num = stripped_msg.replace('决斗', '')
+    global MAX_PART_NUM
+    if num:
+        if tools.is_int(num):
+            num = int(num)
+            if num < 2 or num > MAX_PART_NUM:
+                await session.send('这人数什么鬼？2~6个人啊！你跟那个姓凑学的数学的吗？')
+                return
+            else:
+                return IntentCommand(90.0, 'duel_c', current_arg=num)
+        else:
+            await session.send('哈？数字！数字懂吗？3x7=27')
+            return
+    return IntentCommand(90.0, 'duel_c')
 
 @on_command('duel_c', aliases=('决斗', '俄罗斯轮盘'), permission=perm.GROUP_ADMIN)
 @check_black_list()
@@ -96,8 +98,17 @@ async def duel_c(session: CommandSession):
     ctx = session.ctx.copy()
     group_id = ctx['group_id']
     user_id = ctx['user_id']
+    cur_time = math.floor(time.time())
     if str(group_id) in DUEL_DATA:
         session.finish('群里当前已经有人在玩了！')
+    
+    global CD_DATA
+    global CD_TIME
+    if str(group_id) in CD_DATA:
+        last_time = CD_DATA[str(group_id)]
+        if cur_time - last_time < CD_TIME:
+            session.finish('少女装弹中，剩余%s秒'%str(CD_TIME - (cur_time-last_time)))
+
     part_num = session.get('part_num', prompt='最大参加人数是？')
     if part_num:
         nickname = ''
@@ -109,7 +120,6 @@ async def duel_c(session: CommandSession):
         else:
             nickname = ctx['sender']['nickname']
         rand_num = tools.rand_uniint_list(1, MAX_PART_NUM, 1)
-        cur_time = math.floor(time.time())
         DUEL_DATA[str(group_id)] = {
             'initiator' : user_id,
             'part_list' : [user_id],
@@ -149,30 +159,30 @@ async def dc_parser(session: CommandSession):
         else:
             session.state['part_num'] = int(stripped_arg)
 
-# @on_natural_language(keywords={'自定决斗'})
-# @check_black_list()
-# async def duel_cus_nl(session: NLPSession):
-#     stripped_msg = session.msg_text.strip()
-#     num = stripped_msg.replace('自定决斗', '')
-#     global MAX_PART_NUM
-#     global DUEL_DATA
-#     ctx = session.ctx.copy()
-#     group_id = ctx['group_id']
-#     if str(group_id) in DUEL_DATA:
-#         session.send('群里当前已经有人在玩了！')
-#         return
-#     if num:
-#         if tools.is_int(num):
-#             num = int(num)
-#             if num < 1:
-#                 await session.send('你这个子弹数量？你是池沼吗？')
-#                 return
-#             else:
-#                 return IntentCommand(100.0, 'duel_c_c', current_arg=num)
-#         else:
-#             await session.send('哈？数字！数字懂吗？3x7=27')
-#             return
-#     return IntentCommand(100.0, 'duel_c_c')
+@on_natural_language(keywords={'自定决斗'})
+@check_black_list()
+async def duel_cus_nl(session: NLPSession):
+    stripped_msg = session.msg_text.strip()
+    num = stripped_msg.replace('自定决斗', '')
+    global MAX_PART_NUM
+    global DUEL_DATA
+    ctx = session.ctx.copy()
+    group_id = ctx['group_id']
+    if str(group_id) in DUEL_DATA:
+        session.send('群里当前已经有人在玩了！')
+        return
+    if num:
+        if tools.is_int(num):
+            num = int(num)
+            if num < 1:
+                await session.send('你这个子弹数量？你是池沼吗？')
+                return
+            else:
+                return IntentCommand(100.0, 'duel_c_c', current_arg=num)
+        else:
+            await session.send('哈？数字！数字懂吗？3x7=27')
+            return
+    return IntentCommand(100.0, 'duel_c_c')
 
 @on_command('duel_c_c', aliases=('自定决斗', '自定俄罗斯轮盘'), permission=perm.GROUP_ADMIN)
 @check_black_list()
@@ -183,8 +193,17 @@ async def duel_c_c(session: CommandSession):
     ctx = session.ctx.copy()
     user_id = ctx['user_id']
     group_id = ctx['group_id']
+    cur_time = math.floor(time.time())
     if str(group_id) in DUEL_DATA:
         session.finish('群里当前已经有人在玩了！')
+    
+    global CD_DATA
+    global CD_TIME
+    if str(group_id) in CD_DATA:
+        last_time = CD_DATA[str(group_id)]
+        if cur_time - last_time < CD_TIME:
+            session.finish('少女装弹中，剩余%s秒'%str(CD_TIME - (cur_time-last_time)))
+
     max_loaded = session.get('max_loaded', prompt='放进去的子弹数量是？')
     if not max_loaded:
         return
@@ -200,7 +219,6 @@ async def duel_c_c(session: CommandSession):
     else:
         nickname = ctx['sender']['nickname']
     rand_num = tools.rand_uniint_list(1, MAX_PART_NUM, max_loaded)
-    cur_time = math.floor(time.time())
     DUEL_DATA[str(group_id)] = {
         'initiator' : user_id,
         'part_list' : [user_id],
@@ -312,6 +330,7 @@ async def time_out_check(group_id: int, time: int):
                 if s_name == '':
                     s_name = str(s_id)
                 msg = msg + '\n' + s_name
+            
             try:
                 await bot.send_group_msg(group_id=group_id, message=msg)
             except:
@@ -362,6 +381,10 @@ async def time_out_check(group_id: int, time: int):
                 DEATH_DATA[str(group_id)] = []
             DEATH_DATA[str(group_id)].append(cur_point_user)
             if len(cur_bullet) <= 0 or (len(cur_parts) - len(DEATH_DATA[str(group_id)])) <= 1:
+                #CD
+                global CD_DATA
+                cur_time = math.floor(time.time())
+                CD_DATA[str(group_id)] = cur_time
                 msg = '游戏结束！'
                 await bot.send_group_msg(group_id=group_id, message=msg)
                 for item in cur_parts:
@@ -443,6 +466,7 @@ async def handle_group_message(ctx: Context_T):
                                 if s_name == '':
                                     s_name = str(s_id)
                                 msg = msg + '\n' + s_name
+                            
                             try:
                                 await bot.send_group_msg(group_id=group_id, message=msg)
                             except:
@@ -492,6 +516,10 @@ async def handle_group_message(ctx: Context_T):
                         DEATH_DATA[str(group_id)] = []
                     DEATH_DATA[str(group_id)].append(cur_point_user)
                     if len(cur_bullet) <= 0 or (len(cur_parts) - len(DEATH_DATA[str(group_id)])) <= 1:
+                        #CD
+                        global CD_DATA
+                        cur_time = math.floor(time.time())
+                        CD_DATA[str(group_id)] = cur_time
                         msg = '游戏结束！'
                         await bot.send_group_msg(group_id=group_id, message=msg)
                         for item in cur_parts:
