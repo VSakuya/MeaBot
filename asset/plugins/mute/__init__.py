@@ -277,7 +277,10 @@ async def daily_update(year, month, day, hour, weeknum):
                         tools.sec_to_str(cur_ma_data[key]['max_cur_day']['sec']),
                         str(cur_per / 100000)
                     )
-                    await bot.send_group_msg(group_id = int(key), message = day_msg)
+                    try:
+                        await bot.send_group_msg(group_id = int(key), message = day_msg)
+                    except:
+                        pass
                     cur_ma_data[key]['sum_this_day'] = 0
                     cur_ma_data[key]['max_cur_day'] = {}
         except:
@@ -295,7 +298,10 @@ async def daily_update(year, month, day, hour, weeknum):
                             '和'.join(cur_ma_data[key]['max_cur_week']['nickname']),
                             tools.sec_to_str(cur_ma_data[key]['max_cur_week']['sec'])
                         )
-                        await bot.send_group_msg(group_id = int(key), message = week_msg)
+                        try:
+                            await bot.send_group_msg(group_id = int(key), message = week_msg)
+                        except:
+                            pass
                         cur_ma_data[key]['sum_this_week'] = 0
                         cur_ma_data[key]['max_cur_week'] = {}
             except:
@@ -313,7 +319,10 @@ async def daily_update(year, month, day, hour, weeknum):
                             ,
                             tools.sec_to_str(cur_ma_data[key]['max_cur_month']['sec'])
                         )
-                        await bot.send_group_msg(group_id = int(key), message = month_msg)
+                        try:
+                            await bot.send_group_msg(group_id = int(key), message = month_msg)
+                        except:
+                            pass
                         cur_ma_data[key]['sum_this_month'] = 0
                         cur_ma_data[key]['max_cur_month'] = {}
             except:
